@@ -1,0 +1,4 @@
+.gdb*
+.idea
+*.swp
+*.pyc
