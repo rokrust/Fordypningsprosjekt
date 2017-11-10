@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
-import ublox, sys
+import ublox, sys, ephemeris
+
 
 from optparse import OptionParser
 
@@ -65,6 +66,7 @@ while True:
         break
     if opts.show:
         print(str(msg))
+#        a = ephemeris.EphemerisData(msg)
         sys.stdout.flush()
     elif opts.dots:
         sys.stdout.write('.')
