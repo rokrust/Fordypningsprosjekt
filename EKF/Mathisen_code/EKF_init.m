@@ -1,12 +1,12 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 %
-%          Code written by Pål Mathisen
+%          Code written by Paal Mathisen
 %
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-EKF_PR.N_measurment                = 8;
+EKF_PR.N_measurment     = 8;
 
 % Uncertainties               
 if EKF_PR.M_Uncertainty == 1
@@ -39,7 +39,7 @@ EKF_PR.bias_am         = 1 * rand(3,1);
 log.add('bias_am',3);
 log.store('bias_am', bias_m, 1);
 
-[EKF_PR.A_d, EKF_PR.B_d]      = Convert_cont2disc(EKF_PR.A, EKF_PR.B, h);
+[EKF_PR.A_d, EKF_PR.B_d]    = Convert_cont2disc(EKF_PR.A, EKF_PR.B, h);
 
 %Radio Beacons
 sig_pos_1                   = [ 1;  1;  1];
@@ -50,10 +50,10 @@ sig_pos_5                   = [ 1; -1; -1];
 sig_pos_6                   = [-1; -1;  1];
 sig_pos_7                   = [-1;  1; -1];
 sig_pos_8                   = [-1; -1; -1];
-EKF_PR.sig_pos                     = 30*[sig_pos_1, sig_pos_2, sig_pos_3, sig_pos_4, sig_pos_5, sig_pos_6, sig_pos_7, sig_pos_8];
+EKF_PR.sig_pos              = 30*[sig_pos_1, sig_pos_2, sig_pos_3, sig_pos_4, sig_pos_5, sig_pos_6, sig_pos_7, sig_pos_8];
 clear sig_pos_1 sig_pos_2 sig_pos_3 sig_pos_4 sig_pos_5 sig_pos_6 sig_pos_7 sig_pos_8
 
-%H                           = diag([1, 1, 1, 0, 0, 0, 0, 0, 0]);
+%H                          = diag([1, 1, 1, 0, 0, 0, 0, 0, 0]);
 
 H_EK                        = @(x, sig_pos, length) [(x-sig_pos(:,1))'/length(1), zeros(1,3), zeros(1,3);
                                                      (x-sig_pos(:,2))'/length(2), zeros(1,3), zeros(1,3);
