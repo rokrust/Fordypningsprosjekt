@@ -54,10 +54,12 @@ dev.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_TIMEGPS, 5)
 dev.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_CLOCK, 5)
 #dev.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_DGPS, 5)
 
-import ephemeris
+from ephemeris import EphemerisData
 import satPosition
+from satelliteData import rawPseudoRange
+from satelliteData import SatelliteData
 
-eph = [EphemerisData for x in range(32)]
+eph = [EphemerisData() for x in range(32)]
 while True:
     msg = dev.receive_message()
     if msg is None:
@@ -70,9 +72,33 @@ while True:
         break
     if opts.show:
         print(str(msg))
-        eph.fill_ephemeris(msg)
-#        a = ephemeris.EphemerisData(msg)
+
+        #SFRBX handler
+        if msg.name() == 'RXM_SFRBX':
+            svid = msg._fields['svid']
+
+            eph[svid-1].fill_ephemeris(msg)
+            #print(svid)
+            if eph[svid-1].is_filled():
+                pass
+
+
+        #RAWX handler
+        if msg.name() == 'RXM_RAWX':
+            gps_week = msg._fields['week']
+            time_of_week = msg._fields['rcvTow']
+            rawPR = rawPseudoRange(gps_week, time_of_week)
+
+            for mes in msg._recs:
+                svid    = mes['svId']
+                cpMes   = mes['cpMes']
+                prMes   = mes['prMes']
+                cno     = mes['cno']
+                trkStat = mes['trkStat']
+                #rawPR.add(svid, prMes, cpMes, 0, trkStat, cno)
+
         sys.stdout.flush()
+
     elif opts.dots:
         sys.stdout.write('.')
         sys.stdout.flush()

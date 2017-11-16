@@ -126,6 +126,11 @@ class SatelliteData:
     def add_NAV_POSECEF(self, msg):
         '''add a NAV_POSECEF message'''
         self.receiver_position = util.PosVector(msg.ecefX*0.01, msg.ecefY*0.01, msg.ecefZ*0.01)
+
+    def add_RXM_SFRBX(self, msg, eph):
+        if eph.is_valid() and eph.is_filled():
+            pass
+
             
     def add_message(self, msg):
         '''add information from ublox messages'''
@@ -137,4 +142,6 @@ class SatelliteData:
             self.add_RXM_RAW(msg)
         elif msg.name() == 'NAV_POSECEF':
             self.add_NAV_POSECEF(msg)
+        elif msg.name() == 'RXM_SFRBX':
+            self.add_RXM_SFRBX(msg)
 

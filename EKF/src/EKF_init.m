@@ -20,15 +20,16 @@ function ekf = EKF_init(n_sat)
              zeros(dim)     zeros(dim)
              zeros(1, dim)  zeros(1, dim)];
     
-    %{
+    
     sys = ss(ekf.A, ekf.B, zeros(n_sat, n), zeros(n_sat, size(ekf.B, 2)));
     sys = c2d(sys, h);     
     ekf.A = sys.A;
     ekf.B = sys.B;
-    %}
-             
-    ekf.x_hat = zeros(n, 1);
-    ekf.Q = eye(n);
-    ekf.R = eye(n_sat);
-    ekf.P = eye(n);
+    
+    ekf.x_hat_  = zeros(n, 1);     
+    ekf.x_hat   = zeros(n, 1);
+    ekf.Q       = eye(n);
+    ekf.R       = eye(n_sat);
+    ekf.P       = eye(n);
+    ekf.P_      = eye(n);
 end

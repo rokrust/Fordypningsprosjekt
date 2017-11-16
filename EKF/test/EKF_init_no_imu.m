@@ -20,20 +20,18 @@ function ekf = EKF_init_no_imu(n_sat)
              zeros(1, dim)  c               0;
              zeros(1, dim)  0               c];
     
-         %{
     sys = ss(ekf.A, ekf.B, zeros(n_sat, n), zeros(n_sat, size(ekf.B, 2)));
     sys = c2d(sys, h);     
     ekf.A = sys.A;
     ekf.B = sys.B;
-        %}
-    ekf.x_hat = zeros(n, 1);
+             
     ekf.Q = [   eye(dim)        zeros(dim)      zeros(dim, 1)   zeros(dim, 1)
                 zeros(dim)      eye(dim)        zeros(dim, 1)   zeros(dim, 1);   
                 zeros(1, dim)   zeros(1, dim)   4*10^-19        0;
-                zeros(1, dim)   zeros(1, dim)   0               32*(pi^2)*(10^(-20))];
-    ekf.Q = eye(n);        
-    %ekf.Q = ((ekf.A) / ekf.A)*ekf.Q;
-            
+                zeros(1, dim)   zeros(1, dim)   0               32*(pi^2)*(10^(-20))];   
     ekf.R = eye(n_sat);
-    ekf.P = eye(n);
+    ekf.P       = eye(n);
+    ekf.P_      = eye(n);
+    ekf.x_hat_  = zeros(n, 1);     
+    ekf.x_hat   = zeros(n, 1);
 end
