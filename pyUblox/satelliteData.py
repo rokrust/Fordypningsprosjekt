@@ -55,13 +55,13 @@ class SatelliteData:
         # the last position calculated from smoothed pseudo ranges
         self.position_estimate = None
 
-        self.ephemeris = util.loadObject('ephemeris.dat')
-        if self.ephemeris is None:
-            self.ephemeris = {}
+        #self.ephemeris = util.loadObject('ephemeris.dat')
+        #if self.ephemeris is None:
+        #    self.ephemeris = {}
         
-        self.ionospheric = util.loadObject('ionospheric.dat')
-        if self.ionospheric is None:
-            self.ionospheric = {}
+        #self.ionospheric = util.loadObject('ionospheric.dat')
+        #if self.ionospheric is None:
+        #    self.ionospheric = {}
         self.min_elevation = 5.0
         self.min_quality = 6
 

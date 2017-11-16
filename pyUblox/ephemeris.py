@@ -24,44 +24,43 @@ class EphemerisData:
         v = self.GET_FIELD_U(w, nb, pos)
         return self.twos_complement(v, nb)
 
-    def __init__(self, msg):
-        from math import pow
-        if not msg.have_field('numWords'):
-            # it doesn't contain the optional part
-            self.valid = False
+    #Include timecheck?
+    def fill_ephemeris(self, msg):
+        if not is_SFRBX(msg):
             return
 
-        #bit 20, 21, 22 of HOW contains subframe id.
+        # bit 20, 21, 22 of HOW contains subframe id.
         subframe_id = self.GET_FIELD_U(msg._recs[1]['dwrd'], 3, 8)
 
+        # drop parity bits and put data in handy list
         dwrds = [];
         for i in range(2, 10):
-            #drop parity bits
             dwrds.append(msg._recs[i]['dwrd'] >> 6)
 
-        self._msg = msg
-        self.svid = msg.svid
+        #Fill respective fields
+        if subframe_id == 1:
+            subframe1(dwrds);
 
+        elif subframe_id == 2:
+            subframe2(dwrds);
+
+        elif subframe_id == 3:
+            subframe3(dwrds);
+
+    def __init__(self):
         #Check if ephemeris is filled
         self.subframe1_valid = False
         self.subframe2_valid = False
         self.subframe3_valid = False
 
         # Definition of Pi used in the GPS coordinate system
-        gpsPi          = 3.1415926535898
+        #gpsPi          = 3.1415926535898
 
-        if subframe_id == 1:
-            pass
+    def ephemeris_is_filled(self):
+        return  self.subframe1_valid and self.subframe2_valid and self.subframe3_valid
 
-        elif subframe_id == 2:
-            pass
-
-        elif subframe_id == 3:
-            pass
-
+    def ephemeris_is_valid(self):
         self.valid = (self.iode1 == self.iode2) and (self.iode1 == (self.iodc & 0xff))
-        self.iode = self.iode1
-        self.ephemeris_filled = self.subframe1_valid and self.subframe2_valid and self.subframe3_valid
 
     def subframe1(self, dwrds):
         week_no = self.GET_FIELD_U(dwrds[0], 10, 14)

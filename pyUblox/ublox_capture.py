@@ -54,6 +54,10 @@ dev.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_TIMEGPS, 5)
 dev.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_CLOCK, 5)
 #dev.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_DGPS, 5)
 
+import ephemeris
+import satPosition
+
+eph = [EphemerisData for x in range(32)]
 while True:
     msg = dev.receive_message()
     if msg is None:
@@ -66,6 +70,7 @@ while True:
         break
     if opts.show:
         print(str(msg))
+        eph.fill_ephemeris(msg)
 #        a = ephemeris.EphemerisData(msg)
         sys.stdout.flush()
     elif opts.dots:
