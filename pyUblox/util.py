@@ -7,13 +7,6 @@ radius_of_earth = 6378137.0 # in meters
 speedOfLight    = 299792458.0 # in m/s
 gpsPi           = 3.1415926535898  # Definition of Pi used in the GPS coordinate system
 
-def is_SFRBX(msg):
-    if not msg.have_field('numWords'):
-        # it doesn't contain the optional part
-        return False
-
-    return True
-
 def gps_distance(lat1, lon1, lat2, lon2):
 	'''return distance between two points in meters,
 	coordinates are in degrees

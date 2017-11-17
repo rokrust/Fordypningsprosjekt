@@ -36,6 +36,10 @@ class SatelliteData:
         self.position_sum = util.PosVector(0,0,0)
         self.position_count = 0
 
+        self.ephemeris = {}
+        for svid in range(1, 32 + 1):
+            self.ephemeris[svid] = ephemeris.EphemerisData()
+
         # the reference position given by the user, if any
         self.reference_position = None
 
@@ -127,9 +131,28 @@ class SatelliteData:
         '''add a NAV_POSECEF message'''
         self.receiver_position = util.PosVector(msg.ecefX*0.01, msg.ecefY*0.01, msg.ecefZ*0.01)
 
-    def add_RXM_SFRBX(self, msg, eph):
-        if eph.is_valid() and eph.is_filled():
-            pass
+    def add_RXM_SFRBX(self, msg):
+        svid = msg._recs['svid']
+        self.ephemeris[svid].fill_ephemeris(msg)
+        self.ionosperic = ephemeris[svid].ion
+
+    def add_RXM_RAWX(self, msg):
+        gps_week = msg._fields['week']
+        time_of_week = msg._fields['rcvTow']
+        self.raw = rawPseudoRange(gps_week, time_of_week * 1.0e-3)
+        #self.raw = rawPseudoRange(msg.week, msg.iTOW * 1.0e-3)
+
+        for mes in msg._recs:
+            svid = mes['svId']
+            cpMes = mes['cpMes']
+            prMes = mes['prMes']
+            cno = mes['cno']
+            trkStat = mes['trkStat']
+
+            self.raw.add(svid, prMes, cpMes, 0, trkStat, cno)
+
+        # step the smoothed pseudo-ranges
+        self.smooth.step(self.raw)
 
             
     def add_message(self, msg):
@@ -144,4 +167,5 @@ class SatelliteData:
             self.add_NAV_POSECEF(msg)
         elif msg.name() == 'RXM_SFRBX':
             self.add_RXM_SFRBX(msg)
-
+        elif msg.name() == 'RXM_RAWX':
+            self.add_RXM_RAWX(msg)

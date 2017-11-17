@@ -29,7 +29,7 @@ class EphemerisData:
         subframe_id = self.GET_FIELD_U(msg._recs[1]['dwrd'], 3, 8)
 
         # drop parity bits and put data in handy list
-        dwrds = [];
+        dwrds = []
         for i in range(2, 10):
             dwrds.append(msg._recs[i]['dwrd'] >> 6)
 
@@ -51,7 +51,6 @@ class EphemerisData:
 
         else:
             print "yolo"
-
 
     def subframe1(self, dwrds):
         if self.is_filled():
@@ -136,6 +135,7 @@ class EphemerisData:
         self.subframe1_valid = False
         self.subframe2_valid = False
         self.subframe3_valid = False
+        self.ion = None
 
         # Definition of Pi used in the GPS coordinate system
         self.gpsPi          = 3.1415926535898

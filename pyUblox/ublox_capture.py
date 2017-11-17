@@ -54,14 +54,34 @@ dev.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_TIMEGPS, 5)
 dev.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_CLOCK, 5)
 #dev.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_DGPS, 5)
 
-from ephemeris import EphemerisData
-import satPosition
-from satelliteData import rawPseudoRange
-from satelliteData import SatelliteData
 
-eph = [EphemerisData() for x in range(32)]
+from satPosition import satPosition
+from satPosition import correctPosition
+from satelliteData import SatelliteData
+from util import PosVector
+import scipy.io
+
+import rangeCorrection as RC
+
+satData = SatelliteData()
+data = {    'pseudorange' : [],
+            'satPos' : []}
 while True:
     msg = dev.receive_message()
+
+    satData.add_message(msg)
+    for svid in range(1, 32 + 1):
+        if satData.valid(svid):            # All ephemeris filled
+            satPosition(satData, svid, 0)  # Read correct capture time here (0 is wrong of course)
+            correctPosition(satData, svid, 0)  # Read correct time of flight (0 is wrong of course)
+
+            ## Corrections
+            RC.sv_clock_correction(satData, svid, )  # fill in blanks
+            RC.ionospheric_correction(satData, svid,, satData.satpos[svid])  # fill in blanks
+            RC.tropospheric_correction_standard(satData, svid)
+            data['pseudorange'].append(satData.prCorrected)
+            data['satPos'].append(satData.satpos)
+
     if msg is None:
         if opts.reopen:
             dev.close()
@@ -72,33 +92,10 @@ while True:
         break
     if opts.show:
         print(str(msg))
-
-        #SFRBX handler
-        if msg.name() == 'RXM_SFRBX':
-            svid = msg._fields['svid']
-
-            eph[svid-1].fill_ephemeris(msg)
-            #print(svid)
-            if eph[svid-1].is_filled():
-                pass
-
-
-        #RAWX handler
-        if msg.name() == 'RXM_RAWX':
-            gps_week = msg._fields['week']
-            time_of_week = msg._fields['rcvTow']
-            rawPR = rawPseudoRange(gps_week, time_of_week)
-
-            for mes in msg._recs:
-                svid    = mes['svId']
-                cpMes   = mes['cpMes']
-                prMes   = mes['prMes']
-                cno     = mes['cno']
-                trkStat = mes['trkStat']
-                #rawPR.add(svid, prMes, cpMes, 0, trkStat, cno)
-
         sys.stdout.flush()
 
     elif opts.dots:
         sys.stdout.write('.')
         sys.stdout.flush()
+
+scipy.io.savemat('Satellite_data', data)
