@@ -132,9 +132,9 @@ class SatelliteData:
         self.receiver_position = util.PosVector(msg.ecefX*0.01, msg.ecefY*0.01, msg.ecefZ*0.01)
 
     def add_RXM_SFRBX(self, msg):
-        svid = msg._recs['svid']
+        svid = msg._fields['svid']
         self.ephemeris[svid].fill_ephemeris(msg)
-        self.ionosperic = ephemeris[svid].ion
+        self.ionosperic = self.ephemeris[svid].ion
 
     def add_RXM_RAWX(self, msg):
         gps_week = msg._fields['week']

@@ -66,19 +66,23 @@ import rangeCorrection as RC
 satData = SatelliteData()
 data = {    'pseudorange' : [],
             'satPos' : []}
+i = 0
 while True:
+    i += 1
     msg = dev.receive_message()
+    msg.unpack()
 
     satData.add_message(msg)
     for svid in range(1, 32 + 1):
         if satData.valid(svid):            # All ephemeris filled
             satPosition(satData, svid, 0)  # Read correct capture time here (0 is wrong of course)
-            correctPosition(satData, svid, 0)  # Read correct time of flight (0 is wrong of course)
+#            correctPosition(satData, svid, 0)  # Read correct time of flight (0 is wrong of course)
 
             ## Corrections
-            RC.sv_clock_correction(satData, svid, )  # fill in blanks
-            RC.ionospheric_correction(satData, svid,, satData.satpos[svid])  # fill in blanks
-            RC.tropospheric_correction_standard(satData, svid)
+           # RC.sv_clock_correction(satData, svid, )  # fill in blanks
+           # RC.ionospheric_correction(satData, svid,, satData.satpos[svid])  # fill in blanks
+           # RC.tropospheric_correction_standard(satData, svid)
+
             data['pseudorange'].append(satData.prCorrected)
             data['satPos'].append(satData.satpos)
 
@@ -91,8 +95,9 @@ while True:
             continue
         break
     if opts.show:
-        print(str(msg))
-        sys.stdout.flush()
+        if msg.name() == 'RXM_SFRBX':
+            print(str(msg))
+            sys.stdout.flush()
 
     elif opts.dots:
         sys.stdout.write('.')

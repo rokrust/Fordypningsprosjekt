@@ -50,7 +50,7 @@ class EphemerisData:
             pass
 
         else:
-            print "yolo"
+            print("yolo")
 
     def subframe1(self, dwrds):
         if self.is_filled():
