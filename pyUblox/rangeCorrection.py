@@ -9,8 +9,8 @@ def sv_clock_correction(satinfo, svid, transmitTime, Trel):
     '''space vehicle clock correction'''
     from math import sin, sqrt
 
-    toc = satinfo.ephemeris[svid].toc
     eph = satinfo.ephemeris[svid]
+    toc = satinfo.ephemeris[svid].toc
     
     T = util.correctWeeklyTime(transmitTime - toc)
     

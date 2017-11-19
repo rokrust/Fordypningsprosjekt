@@ -33,6 +33,8 @@ class EphemerisData:
         for i in range(2, 10):
             dwrds.append(msg._recs[i]['dwrd'] >> 6)
 
+        #self.tow = GET_FIELD_U(dwrds[1], )
+
         #Fill respective fields
         if subframe_id == 1:
             self.subframe1(dwrds)

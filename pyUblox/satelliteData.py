@@ -37,6 +37,8 @@ class SatelliteData:
         self.position_count = 0
 
         self.ephemeris = {}
+        self.visible_satellites = []
+
         for svid in range(1, 32 + 1):
             self.ephemeris[svid] = ephemeris.EphemerisData()
 
@@ -148,6 +150,10 @@ class SatelliteData:
             prMes = mes['prMes']
             cno = mes['cno']
             trkStat = mes['trkStat']
+
+            # Locked satellites
+            if svid not in self.visible_satellites:
+                self.visible_satellites.append(svid)
 
             self.raw.add(svid, prMes, cpMes, 0, trkStat, cno)
 
