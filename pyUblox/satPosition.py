@@ -7,7 +7,7 @@ import util
 
 
 def satPosition(satinfo, svid, transmitTime):
-    if satinfo.ephemeris[svid].is_filled:
+    if satinfo.ephemeris[svid].is_filled():
         satinfo.satpos[svid] = satPosition_raw(satinfo.ephemeris[svid], svid, transmitTime)
 
 def satPosition_raw(eph, svid, transmitTime):

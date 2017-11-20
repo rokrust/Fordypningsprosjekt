@@ -76,7 +76,7 @@ while True:
     for svid in range(1, 32 + 1):
         satPosition(satData, svid, 0) #Needs correct time   
 
-    #satData.add_message(msg)
+    satData.add_message(msg)
 
     #if not capture_time == current_capture_time
 
