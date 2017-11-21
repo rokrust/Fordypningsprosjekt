@@ -195,7 +195,7 @@ class IonosphericData:
     def __init__(self, msg):
         '''parse assuming a subframe 4 page 18 message containing ionospheric data'''
         # drop parity bits and put data in handy list
-        words = [];
+        words = []
         for i in range(10):
             words.append(msg._recs[i]['dwrd'] >> 6)
 

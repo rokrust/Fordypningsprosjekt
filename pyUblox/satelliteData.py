@@ -150,13 +150,14 @@ class SatelliteData:
             self.ephemeris[svid] = ephemeris.EphemerisData()
 
         self.ephemeris[svid].fill_ephemeris(msg)
-        self.ionosperic = self.ephemeris[svid].ion
+        self.ionosperic = self.ephemeris[svid].ion #Todo should not be stored in every ephemeris instance
 
     def add_RXM_RAWX(self, msg):
         gps_week = msg._fields['week']
         time_of_week = msg._fields['rcvTow']
-        self.raw = rawPseudoRange(gps_week, time_of_week * 1.0e-3)
+        self.raw = rawPseudoRange(gps_week, time_of_week)
         #self.raw = rawPseudoRange(msg.week, msg.iTOW * 1.0e-3)
+
 
         for mes in msg._recs:
             svid = mes['svId']
@@ -165,14 +166,10 @@ class SatelliteData:
             cno = mes['cno']
             trkStat = mes['trkStat']
 
-            # Locked satellites
-            if svid not in self.visible_satellites:
-                self.visible_satellites.append(svid)
-
             self.raw.add(svid, prMes, cpMes, 0, trkStat, cno)
 
-        # step the smoothed pseudo-ranges
-        self.smooth.step(self.raw)
+            # step the smoothed pseudo-ranges
+            self.smooth.step(self.raw)
 
             
     def add_message(self, msg):

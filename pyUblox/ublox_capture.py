@@ -59,6 +59,7 @@ from satPosition import satPosition
 from satPosition import correctPosition
 from satelliteData import SatelliteData
 from util import PosVector
+from util import speedOfLight
 import scipy.io
 
 import rangeCorrection as RC
@@ -72,7 +73,9 @@ visible_satellites = []
 
 while True:
     msg = dev.receive_message()
+
     msg.unpack()
+
 
     satData.add_message(msg)
 
@@ -82,18 +85,30 @@ while True:
 
             for prData in msg._recs:
                 svid = prData['svId']
-                time = msg._fields['rcvTow']
+                t_flight = prData['prMes']/speedOfLight
+                t_sv = msg._fields['rcvTow'] - t_flight
 
-                satPosition(satData, svid, time)
+                #Satellite position estimate
+                satPosition(satData, svid, t_sv)
+                correctPosition(satData, svid, t_flight)
                 pos = satData.satpos[svid]
+
+                #Corrections
+                dRC_SV  = RC.sv_clock_correction(satData, svid, t_sv, pos.extra)
+                #dRC_TRP = RC.tropospheric_correction_standard(satData, svid) requires elevation which requires estimated position
+                dRC_ION = 0
+                if not satData.ionosperic == None:
+                    dRC_ION = RC.ionospheric_correction(satData, svid, t_sv, pos)
+
+                satData.raw.prMeasured[svid] += -dRC_SV + dRC_ION# + dRC_TRP
+
+                #Add to mat-file
                 data['satPos'][-1][svid-1] = list([pos.X, pos.Y, pos.Z])
                 data['pseudorange'][-1][svid - 1] = satData.raw.prMeasured[svid]
-                #correctPosition(satData, svid, 0)  # Read correct time of flight (0 is wrong of course)
 
             ## Corrections
-           # RC.sv_clock_correction(satData, svid, )  # fill in blanks
-           # RC.ionospheric_correction(satData, svid,, satData.satpos[svid])  # fill in blanks
-           # RC.tropospheric_correction_standard(satData, svid)
+
+    #end of file
     if msg is None:
         if opts.reopen:
             dev.close()
@@ -101,6 +116,9 @@ while True:
             dev.set_logfile(opts.log, append=True)
             sys.stdout.write('R')
             continue
+
+        scipy.io.savemat('Satellite_data', data, )
+        print "Parsing done.. saved data in Sattelite_data.mat"
         break
     if opts.show:
         print(str(msg))
@@ -109,5 +127,3 @@ while True:
     elif opts.dots:
         sys.stdout.write('.')
         sys.stdout.flush()
-
-scipy.io.savemat('Satellite_data', data)
