@@ -84,6 +84,18 @@ class SatelliteData:
         self.prCorrected = {}
         self.geometricRange = {}
 
+    def valid(self):
+        n_valid = 0
+        for eph in self.ephemeris.itervalues():
+            if eph.valid():
+                n_valid += 1
+
+        if n_valid >= 4:
+            return True
+
+        else:
+            return False
+
     def valid(self, svid):
         '''return true if we have all data for a given svid'''
         if not svid in self.ephemeris:

@@ -1,3 +1,4 @@
+from util import gpsPi
 
 class EphemerisData:
     '''container for parsing a AID_EPH message
@@ -55,9 +56,13 @@ class EphemerisData:
             print("yolo")
 
     def subframe1(self, dwrds):
-        if self.is_filled():
-            self.subframe2_valid = False
-            self.subframe3_valid = False
+        new_iodc = (self.GET_FIELD_U(dwrds[0], 2, 0) << 8) | self.GET_FIELD_U(dwrds[5], 8, 16)
+
+        #Ephemeris unchanged
+        if new_iodc == self.iodc:
+            return
+
+        self.iodc = new_iodc
 
         week_no = self.GET_FIELD_U(dwrds[0], 10, 14)
         code_on_l2 = self.GET_FIELD_U(dwrds[0], 2, 12)
@@ -73,7 +78,6 @@ class EphemerisData:
         self._rsvd2 = self.GET_FIELD_U(dwrds[2], 24, 0)
         self._rsvd3 = self.GET_FIELD_U(dwrds[3], 24, 0)
         self._rsvd4 = self.GET_FIELD_U(dwrds[4], 16, 8)
-        self.iodc = (self.GET_FIELD_U(dwrds[0], 2, 0) << 8) | self.GET_FIELD_U(dwrds[5], 8, 16)
         self.Tgd = t_gd * pow(2, -31)
         # clock correction information
         self.toc = t_oc * pow(2, 4)
@@ -83,10 +87,13 @@ class EphemerisData:
         self.subframe1_valid = True
 
     def subframe2(self, dwrds):
-        if self.is_filled():
-            self.subframe1_valid = False
-            self.subframe3_valid = False
+        new_iode1 = self.GET_FIELD_U(dwrds[0], 8, 16)
 
+        #Ephemeris unchanged
+        if new_iode1 == self.iode1:
+            return
+
+        self.iode1 = new_iode1
         c_rs = self.GET_FIELD_S(dwrds[0], 16, 0)
         delta_n = self.GET_FIELD_S(dwrds[1], 16, 8)
         m_0 = (self.GET_FIELD_S(dwrds[1], 8, 0) << 24) | self.GET_FIELD_U(dwrds[2], 24, 0)
@@ -101,18 +108,20 @@ class EphemerisData:
         self.cuc = c_uc * pow(2, -29)
         self.cus = c_us * pow(2, -29)
         self.A = pow(a_powhalf * pow(2, -19), 2.0)
-        self.deltaN = delta_n * pow(2, -43) * self.gpsPi
+        self.deltaN = delta_n * pow(2, -43) * gpsPi
         self.ecc = e * pow(2, -33)
-        self.M0 = m_0 * pow(2, -31) * self.gpsPi
+        self.M0 = m_0 * pow(2, -31) * gpsPi
         self.toe = t_oe * pow(2, 4)
-        self.iode1 = self.GET_FIELD_U(dwrds[0], 8, 16)
         self.subframe2_valid = True
 
     def subframe3(self, dwrds):
-        if self.is_filled():
-            self.subframe2_valid = False
-            self.subframe1_valid = False
+        new_iode2 = self.GET_FIELD_U(dwrds[7], 8, 16)
 
+        #Ephemeris unchanged
+        if new_iode2 == self.iode2:
+            return
+
+        self.iode2 = new_iode2
         c_ic = self.GET_FIELD_S(dwrds[0], 16, 8)
         omega_0 = (self.GET_FIELD_S(dwrds[0], 8, 0) << 24) | self.GET_FIELD_U(dwrds[1], 24, 0)
         c_is = self.GET_FIELD_S(dwrds[2], 16, 8)
@@ -129,7 +138,6 @@ class EphemerisData:
         self.omega = w * pow(2, -31) * self.gpsPi
         self.omega_dot = omega_dot * pow(2, -43) * self.gpsPi
         self.omega0 = omega_0 * pow(2, -31) * self.gpsPi
-        self.iode2 = self.GET_FIELD_U(dwrds[7], 8, 16)
         self.subframe3_valid = True
 
     def __init__(self):
@@ -137,6 +145,9 @@ class EphemerisData:
         self.subframe1_valid = False
         self.subframe2_valid = False
         self.subframe3_valid = False
+        self.iodc = None
+        self.iode1 = None
+        self.iode2 = None
         self.ion = None
 
         # Definition of Pi used in the GPS coordinate system

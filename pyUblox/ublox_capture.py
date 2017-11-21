@@ -66,18 +66,25 @@ import rangeCorrection as RC
 satData = SatelliteData()
 data = {    'pseudorange' : [],
             'satPos' : []}
-zeroRow = [0 for x in range(33)]
+zeroRow = [0 for x in range(32)]
 visible_satellites = []
 
 while True:
     msg = dev.receive_message()
     msg.unpack()
 
-    for svid in range(1, 32 + 1):
-        satPosition(satData, svid, 0) #Needs correct time   
-
     satData.add_message(msg)
 
+    if msg.name() == 'RXM_RAWX':
+        if satData.valid():
+            data['pseudorange'].append(zeroRow)
+            data['satPos'].append(zeroRow)
+
+            for svid in satData.ephemeris:
+                time = msg._fields['rcvTow']
+                satPosition(satData, svid, time) #Should be transmit time
+                data['satPos'][svid-1] = satData.satpos[svid]
+                data['pseudorange'][svid - 1] = satData.raw.prMeasured[svid]
     #if not capture_time == current_capture_time
 
     #for svid in range(1, 32 + 1):
