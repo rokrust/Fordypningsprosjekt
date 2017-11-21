@@ -67,6 +67,7 @@ satData = SatelliteData()
 data = {    'pseudorange' : [],
             'satPos' : []}
 zeroRow = [0 for x in range(32)]
+zeroPos = [[0, 0, 0] for x in range(32)]
 visible_satellites = []
 
 while True:
@@ -75,31 +76,24 @@ while True:
 
     satData.add_message(msg)
 
-    if msg.name() == 'RXM_RAWX':
-        if satData.valid():
-            data['pseudorange'].append(zeroRow)
-            data['satPos'].append(zeroRow)
+    if msg.name() == 'RXM_RAWX' and satData.valid():
+            data['pseudorange'].append(list(zeroRow))
+            data['satPos'].append(list(zeroPos))
 
-            for svid in satData.ephemeris:
+            for prData in msg._recs:
+                svid = prData['svId']
                 time = msg._fields['rcvTow']
-                satPosition(satData, svid, time) #Should be transmit time
-                data['satPos'][svid-1] = satData.satpos[svid]
-                data['pseudorange'][svid - 1] = satData.raw.prMeasured[svid]
-    #if not capture_time == current_capture_time
 
-    #for svid in range(1, 32 + 1):
-        #if satData.valid(svid):            # All ephemeris filled
-            #satPosition(satData, svid, 0)  # Read correct capture time here (0 is wrong of course)
-#            correctPosition(satData, svid, 0)  # Read correct time of flight (0 is wrong of course)
+                satPosition(satData, svid, time)
+                pos = satData.satpos[svid]
+                data['satPos'][-1][svid-1] = list([pos.X, pos.Y, pos.Z])
+                data['pseudorange'][-1][svid - 1] = satData.raw.prMeasured[svid]
+                #correctPosition(satData, svid, 0)  # Read correct time of flight (0 is wrong of course)
 
             ## Corrections
            # RC.sv_clock_correction(satData, svid, )  # fill in blanks
            # RC.ionospheric_correction(satData, svid,, satData.satpos[svid])  # fill in blanks
            # RC.tropospheric_correction_standard(satData, svid)
-
-            #data['pseudorange'].append(satData.prCorrected)
-            #data['satPos'].append(satData.satpos)
-
     if msg is None:
         if opts.reopen:
             dev.close()

@@ -39,9 +39,6 @@ class SatelliteData:
         self.ephemeris = {}
         self.visible_satellites = []
 
-        for svid in range(1, 32 + 1):
-            self.ephemeris[svid] = ephemeris.EphemerisData()
-
         # the reference position given by the user, if any
         self.reference_position = None
 
@@ -64,7 +61,8 @@ class SatelliteData:
         #self.ephemeris = util.loadObject('ephemeris.dat')
         #if self.ephemeris is None:
         #    self.ephemeris = {}
-        
+        self.ephemeris = {}
+
         #self.ionospheric = util.loadObject('ionospheric.dat')
         #if self.ionospheric is None:
         #    self.ionospheric = {}
@@ -87,7 +85,7 @@ class SatelliteData:
     def valid(self):
         n_valid = 0
         for eph in self.ephemeris.itervalues():
-            if eph.valid():
+            if eph.is_valid():
                 n_valid += 1
 
         if n_valid >= 4:
@@ -96,12 +94,12 @@ class SatelliteData:
         else:
             return False
 
-    def valid(self, svid):
-        '''return true if we have all data for a given svid'''
-        if not svid in self.ephemeris:
-            #print("no eph")
-            return False
-        return True
+    #def valid(self, svid):
+    #    '''return true if we have all data for a given svid'''
+    #    if not svid in self.ephemeris:
+    #        #print("no eph")
+    #        return False
+    #    return True
 
     def add_AID_EPH(self, msg):
         '''add some AID_EPH ephemeris data'''
@@ -147,6 +145,10 @@ class SatelliteData:
 
     def add_RXM_SFRBX(self, msg):
         svid = msg._fields['svid']
+
+        if svid not in self.ephemeris.keys():
+            self.ephemeris[svid] = ephemeris.EphemerisData()
+
         self.ephemeris[svid].fill_ephemeris(msg)
         self.ionosperic = self.ephemeris[svid].ion
 

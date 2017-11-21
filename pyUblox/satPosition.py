@@ -7,7 +7,13 @@ import util
 
 
 def satPosition(satinfo, svid, transmitTime):
-    satinfo.satpos[svid] = satPosition_raw(satinfo.ephemeris[svid], svid, transmitTime)
+    if svid in satinfo.ephemeris:
+        eph = satinfo.ephemeris[svid]
+        if eph.is_valid():
+            satinfo.satpos[svid] = satPosition_raw(eph, svid, transmitTime)
+            return
+
+    satinfo.satpos[svid] = util.PosVector(0, 0, 0)
 
 def satPosition_raw(eph, svid, transmitTime):
     '''calculate satellite position

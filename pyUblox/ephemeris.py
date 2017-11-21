@@ -157,7 +157,8 @@ class EphemerisData:
         return  self.subframe1_valid and self.subframe2_valid and self.subframe3_valid
 
     def is_valid(self):
-        self.valid = (self.iode1 == self.iode2) and (self.iode1 == (self.iodc & 0xff))
+        if not (self.iode1 == None or self.iode2 == None or self.iodc == None):
+            return (self.iode1 == self.iode2) and (self.iode1 == self.iodc)
 
     def __eq__(self, other):
         '''allow for equality testing
