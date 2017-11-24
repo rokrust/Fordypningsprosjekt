@@ -47,7 +47,7 @@ class EphemerisData:
             self.subframe3(dwrds)
 
         elif subframe_id == 4:
-            self.ion = IonosphericData(msg)
+            self.ionospheric = IonosphericData(msg)
 
         elif subframe_id == 5:
             pass
@@ -79,6 +79,7 @@ class EphemerisData:
         self._rsvd3 = self.GET_FIELD_U(dwrds[3], 24, 0)
         self._rsvd4 = self.GET_FIELD_U(dwrds[4], 16, 8)
         self.Tgd = t_gd * pow(2, -31)
+
         # clock correction information
         self.toc = t_oc * pow(2, 4)
         self.af0 = a_f0 * pow(2, -31)
@@ -148,7 +149,7 @@ class EphemerisData:
         self.iodc = None
         self.iode1 = None
         self.iode2 = None
-        self.ion = None
+        self.ionospheric = None
 
         # Definition of Pi used in the GPS coordinate system
         self.gpsPi          = 3.1415926535898
@@ -199,22 +200,24 @@ class IonosphericData:
         for i in range(10):
             words.append(msg._recs[i]['dwrd'] >> 6)
 
-        for i in range(10):
-            words[i] = words[i] >> 6                        #remove parity bits
-            words[i] = (words[i] & 0xffffff)
-        words[0] &= 0xff0000
+        self.pageID = ((words[2] >> 16) & 0x3f)
+        self.id = (words[2] >> 22)+3
+
+        #for i in range(10):
+        #    words[i] = (words[i] & 0xffffff)
+        #words[0] &= 0xff0000
 
  #       if not words[0] in [0x8b0000, 0x740000]:
  #           self.valid = False
  #           return
 
-        if words[0] == 0x740000:                            #"SFRB invert"
-            for i in range(10):
-                words[i] ^= 0xffffff
+        #if words[0] == 0x740000:                            #"SFRB invert"
+        #    for i in range(10):
+        #        words[i] ^= 0xffffff
 
-        self.svid = msg._fields['svid']
-        self.id = (words[1] >> 2) & 0x07                    #wrong
-        self.pageID = (words[2] & 0x3f0000) >> 16           #wrong
+        #self.svid = msg._fields['svid']
+        #self.id = (words[2] >> 2) & 0x07
+        #self.pageID = (words[2] & 0x3f0000) >> 16           #wrong
 
         # this checks if we have the right subframe
         self.valid = (self.pageID == 56 and self.id == 4)

@@ -1,4 +1,5 @@
 import util, ephemeris, prSmooth
+import rangeCorrection as RC
 
 class rawPseudoRange:
     '''class to hold raw range information from a receiver'''
@@ -82,17 +83,33 @@ class SatelliteData:
         self.prCorrected = {}
         self.geometricRange = {}
 
-    def valid(self):
-        n_valid = 0
-        for eph in self.ephemeris.itervalues():
-            if eph.is_valid():
-                n_valid += 1
+    def correct_range(self, satData, svid, t_sv, pos):
 
-        if n_valid >= 4:
-            return True
+        #if self.ephemeris[svid].is_filled():
+        dRC_SV = RC.sv_clock_correction(satData, svid, t_sv, pos.extra)*util.speedOfLight
+        satData.raw.prMeasured[svid] -= dRC_SV
 
-        else:
-            return False
+            ## requires satellite elevation which requires estimated receiver position
+            # dRC_TRP = RC.tropospheric_correction_standard(satData, svid)
+            #dRC_ION = 0
+            #if self.ionosperic.valid:
+            #    dRC_ION = RC.ionospheric_correction(satData, svid, t_sv, pos)
+            #    return 0
+            #else:
+            #    return 1
+
+        #return -1
+
+    def determine_locked_satellites(self):
+        self.locked_satellites = []
+
+        for svid in self.ephemeris:
+            eph = self.ephemeris[svid]
+
+            #Ephemeris of satellite exists
+            if eph.is_valid() and svid in self.raw.prMeasured:
+                self.locked_satellites.append(svid)
+
 
     #def valid(self, svid):
     #    '''return true if we have all data for a given svid'''
@@ -145,12 +162,10 @@ class SatelliteData:
 
     def add_RXM_SFRBX(self, msg):
         svid = msg._fields['svid']
-
         if svid not in self.ephemeris.keys():
             self.ephemeris[svid] = ephemeris.EphemerisData()
 
         self.ephemeris[svid].fill_ephemeris(msg)
-        self.ionosperic = self.ephemeris[svid].ion #Todo should not be stored in every ephemeris instance
 
     def add_RXM_RAWX(self, msg):
         gps_week = msg._fields['week']
@@ -171,7 +186,8 @@ class SatelliteData:
             # step the smoothed pseudo-ranges
             self.smooth.step(self.raw)
 
-            
+        self.determine_locked_satellites()
+
     def add_message(self, msg):
         '''add information from ublox messages'''
         if msg.name() == 'AID_EPH':

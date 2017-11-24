@@ -128,7 +128,6 @@ def correctPosition_raw(satpos, time_of_flight):
     satpos.X = X * cos(alpha) + Y * sin(alpha)
     satpos.Y = -X * sin(alpha) + Y * cos(alpha)
 
-
 def calculateAzimuthElevation(satinfo, svid, ourpos):
     '''calculate Azimuth and elevation for a sattelite given our position in ECEF
     based upon calcAzEl() in

@@ -10,11 +10,12 @@ def sv_clock_correction(satinfo, svid, transmitTime, Trel):
     from math import sin, sqrt
 
     eph = satinfo.ephemeris[svid]
-    toc = satinfo.ephemeris[svid].toc
+    toc = eph.toc
+    tgd = eph.Tgd
     
     T = util.correctWeeklyTime(transmitTime - toc)
-    
-    dTclck = eph.af0 + eph.af1 * T + eph.af2 * T * T + Trel # - eph.Tgd
+
+    dTclck = eph.af0 + eph.af1 * T + eph.af2 * T * T + Trel - tgd
 
     return dTclck
 
@@ -28,7 +29,7 @@ def ionospheric_correction(satinfo,
     '''
     from math import radians, cos, sin
 
-    if not svid in satinfo.ionospheric:
+    if satinfo.ionospheric == None:
         return 0
     
     llh = posestimate_ecef.ToLLH()
@@ -40,14 +41,14 @@ def ionospheric_correction(satinfo,
     Az = radians(satinfo.azimuth[svid]) / pi
     El = radians(satinfo.elevation[svid]) / pi
 
-    a0 = satinfo.ionospheric[svid].a0
-    a1 = satinfo.ionospheric[svid].a1
-    a2 = satinfo.ionospheric[svid].a2
-    a3 = satinfo.ionospheric[svid].a3
-    b0 = satinfo.ionospheric[svid].b0
-    b1 = satinfo.ionospheric[svid].b1
-    b2 = satinfo.ionospheric[svid].b2
-    b3 = satinfo.ionospheric[svid].b3
+    a0 = satinfo.ephemeris[svid].ionospheric.a0
+    a1 = satinfo.ephemeris[svid].ionospheric.a1
+    a2 = satinfo.ephemeris[svid].ionospheric.a2
+    a3 = satinfo.ephemeris[svid].ionospheric.a3
+    b0 = satinfo.ephemeris[svid].ionospheric.b0
+    b1 = satinfo.ephemeris[svid].ionospheric.b1
+    b2 = satinfo.ephemeris[svid].ionospheric.b2
+    b3 = satinfo.ephemeris[svid].ionospheric.b3
     
     # main calculation
     phi = 0.0137 / (El + 0.11) - 0.022

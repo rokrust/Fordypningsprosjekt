@@ -58,57 +58,21 @@ dev.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_CLOCK, 5)
 from satPosition import satPosition
 from satPosition import correctPosition
 from satelliteData import SatelliteData
-from util import PosVector
 from util import speedOfLight
 import scipy.io
 
-import rangeCorrection as RC
-
 satData = SatelliteData()
-data = {    'pseudorange' : [],
-            'satPos' : []}
+data = {    'pseudorange'   : [],
+            'satPos'        : [],
+            'ionospheric'   : [[0 for x in range(8)] for y in range(32)]    }
 zeroRow = [0 for x in range(32)]
 zeroPos = [[0, 0, 0] for x in range(32)]
-visible_satellites = []
 
+i = 0
 while True:
     msg = dev.receive_message()
 
-    msg.unpack()
-
-
-    satData.add_message(msg)
-
-    if msg.name() == 'RXM_RAWX' and satData.valid():
-            data['pseudorange'].append(list(zeroRow))
-            data['satPos'].append(list(zeroPos))
-
-            for prData in msg._recs:
-                svid = prData['svId']
-                t_flight = prData['prMes']/speedOfLight
-                t_sv = msg._fields['rcvTow'] - t_flight
-
-                #Satellite position estimate
-                satPosition(satData, svid, t_sv)
-                correctPosition(satData, svid, t_flight)
-                pos = satData.satpos[svid]
-
-                #Corrections
-                dRC_SV  = RC.sv_clock_correction(satData, svid, t_sv, pos.extra)
-                #dRC_TRP = RC.tropospheric_correction_standard(satData, svid) requires elevation which requires estimated position
-                dRC_ION = 0
-                if not satData.ionosperic == None:
-                    dRC_ION = RC.ionospheric_correction(satData, svid, t_sv, pos)
-
-                satData.raw.prMeasured[svid] += -dRC_SV + dRC_ION# + dRC_TRP
-
-                #Add to mat-file
-                data['satPos'][-1][svid-1] = list([pos.X, pos.Y, pos.Z])
-                data['pseudorange'][-1][svid - 1] = satData.raw.prMeasured[svid]
-
-            ## Corrections
-
-    #end of file
+    # end of file
     if msg is None:
         if opts.reopen:
             dev.close()
@@ -120,6 +84,42 @@ while True:
         scipy.io.savemat('Satellite_data', data, )
         print "Parsing done.. saved data in Sattelite_data.mat"
         break
+
+    msg.unpack()
+    satData.add_message(msg)
+
+    if msg.name() == 'RXM_RAWX':                                #New pseudorange measurement
+            if len(satData.locked_satellites) >= 4:             #At least four satellites locked
+                data['pseudorange'].append(list(zeroRow))
+                data['satPos'].append(list(zeroPos))
+
+                if i == 9990:
+                    pass
+
+                i += 1
+
+                for svid in satData.locked_satellites:
+                    pr = satData.raw.prMeasured[svid]
+
+                    t_flight = pr/speedOfLight                  #time from transmission to receive time
+                    t_sv = satData.raw.time_of_week - t_flight  #transmission time
+
+                    #Satellite position estimate
+                    satPosition(satData, svid, t_sv)
+                    correctPosition(satData, svid, t_flight)
+
+                    pos = satData.satpos[svid]
+                    satData.correct_range(satData, svid, t_sv, pos) #Apply PR corrections where applicable
+
+                    #Add to mat-file
+                    data['satPos'][-1][svid-1] = list([pos.X, pos.Y, pos.Z])
+                    data['pseudorange'][-1][svid - 1] = satData.raw.prMeasured[svid]
+
+                    ion = satData.ephemeris[svid].ionospheric
+                    if ion != None and ion.valid:
+                        ionospheric = [ion.a0, ion.a1, ion.a2, ion.a3, ion.b0, ion.b1, ion.b2, ion.b3]
+                        data['ionospheric'][svid - 1] = ionospheric
+
     if opts.show:
         print(str(msg))
         sys.stdout.flush()
