@@ -170,7 +170,7 @@ class SatelliteData:
     def add_RXM_RAWX(self, msg):
         gps_week = msg._fields['week']
         time_of_week = msg._fields['rcvTow']
-        self.raw = rawPseudoRange(gps_week, time_of_week)
+        self.raw = rawPseudoRange(gps_week, time_of_week*1.0e-3)
         #self.raw = rawPseudoRange(msg.week, msg.iTOW * 1.0e-3)
 
 

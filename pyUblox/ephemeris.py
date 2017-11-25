@@ -109,9 +109,9 @@ class EphemerisData:
         self.cuc = c_uc * pow(2, -29)
         self.cus = c_us * pow(2, -29)
         self.A = pow(a_powhalf * pow(2, -19), 2.0)
-        self.deltaN = delta_n * pow(2, -43) * gpsPi
+        self.deltaN = delta_n * pow(2, -43)# * gpsPi
         self.ecc = e * pow(2, -33)
-        self.M0 = m_0 * pow(2, -31) * gpsPi
+        self.M0 = m_0 * pow(2, -31)# * gpsPi
         self.toe = t_oe * pow(2, 4)
         self.subframe2_valid = True
 
@@ -134,11 +134,11 @@ class EphemerisData:
         self.cis = c_is * pow(2, -29)
         self.cic = c_ic * pow(2, -29)
         self.crc = c_rc * pow(2, -5)
-        self.i0 = i_0 * pow(2, -31) * self.gpsPi
-        self.idot = idot * pow(2, -43) * self.gpsPi
-        self.omega = w * pow(2, -31) * self.gpsPi
-        self.omega_dot = omega_dot * pow(2, -43) * self.gpsPi
-        self.omega0 = omega_0 * pow(2, -31) * self.gpsPi
+        self.i0 = i_0 * pow(2, -31)# * gpsPi
+        self.idot = idot * pow(2, -43)# * gpsPi
+        self.omega = w * pow(2, -31)# * gpsPi
+        self.omega_dot = omega_dot * pow(2, -43)# * gpsPi
+        self.omega0 = omega_0 * pow(2, -31)# * gpsPi
         self.subframe3_valid = True
 
     def __init__(self):
