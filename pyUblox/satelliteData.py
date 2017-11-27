@@ -110,14 +110,6 @@ class SatelliteData:
             if eph.is_valid() and svid in self.raw.prMeasured:
                 self.locked_satellites.append(svid)
 
-
-    #def valid(self, svid):
-    #    '''return true if we have all data for a given svid'''
-    #    if not svid in self.ephemeris:
-    #        #print("no eph")
-    #        return False
-    #    return True
-
     def add_AID_EPH(self, msg):
         '''add some AID_EPH ephemeris data'''
         eph = ephemeris.EphemerisData(msg)

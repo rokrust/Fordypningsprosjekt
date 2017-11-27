@@ -154,8 +154,8 @@ class EphemerisData:
         # Definition of Pi used in the GPS coordinate system
         self.gpsPi          = 3.1415926535898
 
-    def is_filled(self):
-        return  self.subframe1_valid and self.subframe2_valid and self.subframe3_valid
+#    def is_filled(self):
+#        return  self.subframe1_valid and self.subframe2_valid and self.subframe3_valid
 
     def is_valid(self):
         if not (self.iode1 == None or self.iode2 == None or self.iodc == None):

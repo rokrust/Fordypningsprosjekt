@@ -24,7 +24,9 @@ function ekf = EKF_init_no_imu(n_sat)
     sys = c2d(sys, h);     
     ekf.A = sys.A;
     ekf.B = sys.B;
-             
+    
+    ekf.err = cell(n_sat);
+    
     ekf.Q = [   eye(dim)        zeros(dim)      zeros(dim, 1)   zeros(dim, 1)
                 zeros(dim)      eye(dim)        zeros(dim, 1)   zeros(dim, 1);   
                 zeros(1, dim)   zeros(1, dim)   4*10^-19        0;

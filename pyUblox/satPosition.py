@@ -51,6 +51,10 @@ def satPosition_raw(eph, svid, transmitTime):
         w   = eph.omega
         Wdot = eph.omega_dot
         idot = eph.idot
+        af0 = eph.af0
+        af1 = eph.af1
+        af2 = eph.af2
+
     except AttributeError:
         # The given ephemeride doesn't contain the correct fields
         return None
@@ -60,6 +64,10 @@ def satPosition_raw(eph, svid, transmitTime):
         T = T - 604800
     if T < -302400:
         T = T + 604800
+
+    #Clock correction (without relativity)
+    t_sv = af0 + af1*T + af2*T*T
+    T = T - t_sv
 
     n0 = sqrt(mu / (A*A*A))
     n = n0 + dn
@@ -73,6 +81,10 @@ def satPosition_raw(eph, svid, transmitTime):
             break
     else:
         print("WARNING: Kepler Eqn didn't converge for sat {} (last step {})".format(svid, E - Eold))
+
+    # relativistic correction term
+    t_r = F * ec * sqrt(A) * sin(E)
+    T = T - t_r
 
     snu = sqrt(1 - ec*ec) * sin(E) / (1 - ec*cos(E))
     cnu = (cos(E) - ec) / (1 - ec*cos(E))
@@ -106,9 +118,6 @@ def satPosition_raw(eph, svid, transmitTime):
         Xdash*cos(Wc) - Ydash*cos(i)*sin(Wc),
         Xdash*sin(Wc) + Ydash*cos(i)*cos(Wc),
         Ydash*sin(i))
-
-    # relativistic correction term
-    satpos.extra = F * ec * sqrt(A) * sin(E)
 
     return satpos
 
