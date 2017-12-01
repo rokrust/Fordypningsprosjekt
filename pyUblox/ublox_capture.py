@@ -69,7 +69,6 @@ data = {    'pseudorange'   : [],
 zeroRow = [0 for x in range(32)]
 zeroPos = [[0, 0, 0] for x in range(32)]
 
-i = 0
 while True:
     msg = dev.receive_message()
 
@@ -93,11 +92,6 @@ while True:
             if len(satData.locked_satellites) >= 4:             #At least four satellites locked
                 data['pseudorange'].append(list(zeroRow))
                 data['satPos'].append(list(zeroPos))
-
-                if i == 9990:
-                    pass
-
-                i += 1
 
                 for svid in satData.locked_satellites:
                     pr = satData.raw.prMeasured[svid]

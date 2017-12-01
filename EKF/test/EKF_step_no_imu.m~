@@ -10,11 +10,10 @@ function [ekf] = EKF_step_no_imu(sat_poss, y, u, ekf)
     y_hat = range_estimate_no_imu(sat_poss, ekf.x_hat_);
 
     %% Validity checks
-
+    %Observability check
     
     %% Update
     res = y - y_hat;                                                        %residual
-    y_hat = y_hat(all
     S = ekf.H*ekf.P_*ekf.H' + ekf.R;                                        %residual covariance
     K = ekf.P_*ekf.H' / S;                                                  %Kalman gain
     ekf.x_hat = ekf.x_hat_ + K*res;                                         %updated state estimate

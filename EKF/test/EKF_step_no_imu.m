@@ -10,7 +10,7 @@ function [ekf] = EKF_step_no_imu(sat_poss, y, u, ekf)
     y_hat = range_estimate_no_imu(sat_poss, ekf.x_hat_);
 
     %% Validity checks
-
+    %Observability check
     
     %% Update
     res = y - y_hat;                                                        %residual
