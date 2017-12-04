@@ -4,8 +4,7 @@ function [ I_gps ] = ionospheric_correction( iono_param, el, azi, lat, lon, t_gp
 a0 = iono_param(1); a1 = iono_param(2); a2 = iono_param(3); a3 = iono_param(4);
 b0 = iono_param(5); b1 = iono_param(6); b2 = iono_param(7); b3 = iono_param(8);
 
-
-psi = 0.0137 / (el + 0.11) - 0.022;
+psi = 0.0137 ./ (el + 0.11) - 0.022;
 lat_i = lat + psi*cos(azi);
 if abs(lat) > 0.416
     lat_i = 0.416*sign(lat);

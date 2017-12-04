@@ -78,7 +78,7 @@ def satPosition_raw(eph, svid, transmitTime):
 
     M = M0 + n*T
     E = M
-    for ii in range(20):
+    for ii in range(22):
         Eold = E
         E = M + ec * sin(E)
         if abs(E - Eold) < 1.0e-12:

@@ -30,9 +30,6 @@ class EphemerisData:
         subframe_id = self.GET_FIELD_U(msg._recs[1]['dwrd'], 3, 8)
         svid = msg._fields['svid']
 
-        if svid == 15:
-            pass
-
         # drop parity bits and put data in handy list
         dwrds = []
         for i in range(2, 10):

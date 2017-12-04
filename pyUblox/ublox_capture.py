@@ -63,8 +63,9 @@ import scipy.io
 
 satData = SatelliteData()
 data = {    'pseudorange'   : [],
-            'satPos'        : []
-            #'ionospheric'   : [[0 for x in range(8)] for y in range(32)]
+            'satPos'        : [],
+            't'             : [],
+            'ionospheric'   : []
         }
 zeroRow = [0 for x in range(32)]
 zeroPos = [[0, 0, 0] for x in range(32)]
@@ -92,6 +93,7 @@ while True:
             if len(satData.locked_satellites) >= 4:             #At least four satellites locked
                 data['pseudorange'].append(list(zeroRow))
                 data['satPos'].append(list(zeroPos))
+                data['t'].append(msg._fields['rcvTow'])
 
                 for svid in satData.locked_satellites:
                     pr = satData.raw.prMeasured[svid]
@@ -109,10 +111,10 @@ while True:
                     data['satPos'][-1][svid-1] = list([pos.X, pos.Y, pos.Z])
                     data['pseudorange'][-1][svid - 1] = satData.raw.prMeasured[svid]
 
-                    #ion = satData.ephemeris[svid].ionospheric
-                    #if ion != None and ion.valid:
-                    #    ionospheric = [ion.a0, ion.a1, ion.a2, ion.a3, ion.b0, ion.b1, ion.b2, ion.b3]
-                    #    data['ionospheric'][svid - 1] = ionospheric
+                    ion = satData.ephemeris[svid].ionospheric
+                    if ion != None and ion.valid:
+                        ionospheric = [ion.a0, ion.a1, ion.a2, ion.a3, ion.b0, ion.b1, ion.b2, ion.b3]
+                        data['ionospheric'] = ionospheric
 
     if opts.show:
         print(str(msg))
