@@ -51,6 +51,7 @@ def satPosition_raw(eph, svid, transmitTime):
         w   = eph.omega
         Wdot = eph.omega_dot
         idot = eph.idot
+        Tgd = eph.Tgd
         af0 = eph.af0
         af1 = eph.af1
         af2 = eph.af2
@@ -58,16 +59,19 @@ def satPosition_raw(eph, svid, transmitTime):
     except AttributeError:
         # The given ephemeride doesn't contain the correct fields
         return None
+    # Clock correction (without relativity)
+    t_k = (transmitTime - Toe)
+    #Navstar:
+    # Thus, the user who utilizes the L1 P(Y) signal only shall modify the code phase offset
+    # in accordance with paragraph 20.3.3.3.3.1 with the equation
+    dt_sv = af0 + af1 * t_k + af2 * t_k * t_k - Tgd
 
-    T = transmitTime - Toe
+    # Week crossover check
+    T = t_k - dt_sv
     if T > 302400:
         T = T - 604800
     if T < -302400:
         T = T + 604800
-
-    #Clock correction (without relativity)
-    t_sv = af0 + af1*T + af2*T*T
-    T = T - t_sv
 
     n0 = sqrt(mu / (A*A*A))
     n = n0 + dn

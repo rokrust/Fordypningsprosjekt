@@ -1,5 +1,19 @@
 function [ekf] = EKF_step_no_imu(sat_poss, y, u, ekf)
-   
+    
+    %% INFO
+    %In contrast, Kalman filters need to handle these jumps carefully or a 
+    %large position jump will result. Innovation testing within the Kalman 
+    %filter algorithm will easy identify these jumps. Unfortunately, 
+    %innovation testing is usually performed on a per-satellite basis, 
+    %so blindly apply such algorithms may result in you rejecting all of 
+    %your measurements, usually for many consecutive epochs! You therefore 
+    %need to handle the case where all (pseudorange) measurements exhibit 
+    %the same jump between epochs and that the jump is close to an integer 
+    %number of milliseconds.
+    
+    %% TODO
+    %Implement innovation testing
+    %Implement validity checks
     
     %% Initial variables
     n_sat = size(y, 1);

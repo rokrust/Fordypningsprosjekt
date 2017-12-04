@@ -104,7 +104,6 @@ while True:
                     correctPosition(satData, svid, t_flight)
 
                     pos = satData.satpos[svid]
-                    #satData.correct_range(satData, svid, t_sv, pos) #Apply PR corrections where applicable
 
                     #Add to mat-file
                     data['satPos'][-1][svid-1] = list([pos.X, pos.Y, pos.Z])
