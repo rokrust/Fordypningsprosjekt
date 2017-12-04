@@ -13,11 +13,14 @@ function [ el, azi ] = satelazi( pos, sat_pos )
           sqrt((x^2+y^2)*(x^2+y^2+z^2)*(dx.^2+dy.^2+dz.^2)));
     azi = rad2deg(azi);
     
-    %If one element is NaN the sum is NaN too
-    if isnan(sum(azi)) || isnan(sum(el))
-        el = zeros(1, n);
-        azi = zeros(1, n);
-    end
+    %Set undefined to 0 elevation
+    ind = isnan(el);
+    el(ind) = 0;
+    azi(ind) = 0;
+    
+    %Horizon is 0 degrees in all directions
+    ind = el > 90;
+    el(ind) = 180 - el(ind);
 end
 
 %{ 
