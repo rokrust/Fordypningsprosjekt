@@ -93,7 +93,7 @@ while True:
             if len(satData.locked_satellites) >= 4:             #At least four satellites locked
                 data['pseudorange'].append(list(zeroRow))
                 data['satPos'].append(list(zeroPos))
-                data['t'].append(msg._fields['rcvTow'])
+                data['t'].append(list(zeroRow))
 
                 for svid in satData.locked_satellites:
                     pr = satData.raw.prMeasured[svid]
@@ -110,6 +110,7 @@ while True:
                     #Add to mat-file
                     data['satPos'][-1][svid-1] = list([pos.X, pos.Y, pos.Z])
                     data['pseudorange'][-1][svid - 1] = satData.raw.prMeasured[svid]
+                    data['t'][-1][svid - 1] = t_sv
 
                     ion = satData.ephemeris[svid].ionospheric
                     if ion != None and ion.valid:

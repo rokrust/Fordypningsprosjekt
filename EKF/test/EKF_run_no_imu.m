@@ -17,14 +17,17 @@ llh = zeros(3, n);
 vel = zeros(3, n);
 bias = zeros(1, n);
 bias_dot = zeros(1, n);
+pseudoR = zeros(1, n);
 wgs84 = wgs84Ellipsoid('meters');
 
 %Ekf step loop
 P0 = [2.799832e+06; 4.79942e+05; 5.691477e+06];
+c = 299792458.0;
 for i = t
     j = i - base_start + 1;
     [pr, sat_poss, ~] = parse_data(data, i);
     
+    % Corrections
     p = ekf.x_hat(1:3);     %Estimated position
     [lat, lon, h] = ecef2geodetic(wgs84, p(1), p(2), p(3));
     [el, azi] = satelazi(p, sat_poss);
@@ -35,10 +38,14 @@ for i = t
     pr(ind) = [];
     sat_poss(:, ind) = [];
     
-    %di = ionospheric_correction(data.ionospheric, el, azi, lat, lon, data.t(i));
-    %pr = pr - di;
+    di = ionospheric_correction(data.ionospheric, el, azi, lat, lon, data.t(i));
+    pr = pr - di'*c;
+    pseudoR(j) = pr(5);
     
+    % EKF algorithm
     ekf = EKF_step_no_imu(sat_poss, pr, zeros(5, 1), ekf);
+    
+    % For plotting
     llh(:, j)  = [lat; lon; h];
     pos(:, j)  = ekf.x_hat(1:3);
     vel(:, j)  = ekf.x_hat(4:6);
@@ -46,14 +53,33 @@ for i = t
     bias_dot(:, j) = ekf.x_hat(8);
     
 end
+
+%% Plot satellite positions
+% Sat in red and actual position in blue
 %{
+ind = [1, 4, 8, 11, 14, 32];
 for i = t
-    plot3(pos(1, i), pos(2, i), pos(3, i), '*r');
+    for j = ind
+        p = reshape(data.satPos(i, j, :), [3, 1]);
+        plot3(p(1), p(2), p(3), '*r');
+        axis(10^7*[-1 3 -2 2 -1 2.5]);
+        hold on;
+    end
+    plot3(P0(1)/10^7, P0(2)/10^7, P0(3)/ 10^7, 'b*');
+    hold off;
     drawnow
-    pause(0.1)
+    pause(0.0001)
 end
 %}
+
 %plot(t, pos, '-');
 %plot(t, data.pseudorange(1:end, 11)/10^6, '*r');
+%hold on;
+figure; plot(t, pos); title('pos ecef'); xlabel('samples'), ylabel('position {m}')
+figure; plot(t, llh(1:2, :)); title('lat,lon');
+figure; plot(t, vel); title('velocity'); xlabel('samples'), ylabel('velocity {m/s}')
 
-plot(t, llh(1:2, :));
+%Biases
+figure;
+subplot(2, 1, 1); plot(t, bias); title('bias');
+subplot(2, 1, 2); plot(t, bias_dot); title('bias_{dot}');
