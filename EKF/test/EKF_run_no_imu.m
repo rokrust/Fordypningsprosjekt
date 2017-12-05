@@ -22,6 +22,7 @@ wgs84 = wgs84Ellipsoid('meters');
 
 %Ekf step loop
 P0 = [2.799832e+06; 4.79942e+05; 5.691477e+06];
+P0geo = [63.628611, 9.726939, 79];
 c = 299792458.0;
 for i = t
     j = i - base_start + 1;
@@ -30,18 +31,26 @@ for i = t
     % Corrections
     p = ekf.x_hat(1:3);     %Estimated position
     [lat, lon, h] = ecef2geodetic(wgs84, p(1), p(2), p(3));
-    [el, azi] = satelazi(p, sat_poss);
+    [el, azi] = satelazi(lat, lon, h, sat_poss);
+    n_sat = size(el, 2);
     
-    ind = el < 10;
-    el(ind) = [];
-    azi(ind) = [];
-    pr(ind) = [];
-    sat_poss(:, ind) = [];
+    if i == 4260
+        a = 3;
+    end
     
-    di = ionospheric_correction(data.ionospheric, el, azi, lat, lon, data.t(i));
-    pr = pr - di'*c;
-    pseudoR(j) = pr(5);
+    %Remove all satellites with elevation less than 10 deg,
+    %unless all are have 0 deg elevation
+    if any(el)
+        ind = el < 5;
+        el(ind) = [];
+        azi(ind) = [];
+        pr(ind) = [];
+        sat_poss(:, ind) = [];
     
+        %di = ionospheric_correction(data.ionospheric, el, azi, lat, lon, data.t(i));
+        %pr = pr - di'*c;
+    end
+   
     % EKF algorithm
     ekf = EKF_step_no_imu(sat_poss, pr, zeros(5, 1), ekf);
     
@@ -72,14 +81,11 @@ for i = t
 end
 %}
 
-%plot(t, pos, '-');
-%plot(t, data.pseudorange(1:end, 11)/10^6, '*r');
-%hold on;
 figure; plot(t, pos); title('pos ecef'); xlabel('samples'), ylabel('position {m}')
 figure; plot(t, llh(1:2, :)); title('lat,lon');
 figure; plot(t, vel); title('velocity'); xlabel('samples'), ylabel('velocity {m/s}')
 
 %Biases
 figure;
-subplot(2, 1, 1); plot(t, bias); title('bias');
-subplot(2, 1, 2); plot(t, bias_dot); title('bias_{dot}');
+plot(t, bias); title('bias');
+%subplot(2, 1, 2); plot(t, bias_dot); title('bias_{dot}');

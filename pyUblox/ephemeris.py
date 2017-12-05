@@ -35,8 +35,6 @@ class EphemerisData:
         for i in range(2, 10):
             dwrds.append(msg._recs[i]['dwrd'] >> 6)
 
-        #self.tow = GET_FIELD_U(dwrds[1], )
-
         #Fill respective fields
         if subframe_id == 1:
             self.subframe1(dwrds)
@@ -86,7 +84,6 @@ class EphemerisData:
         self.af0 = a_f0 * pow(2, -31)
         self.af1 = a_f1 * pow(2, -43)
         self.af2 = a_f2 * pow(2, -55)
-        self.subframe1_valid = True
 
     def subframe2(self, dwrds):
         new_iode1 = self.GET_FIELD_U(dwrds[0], 8, 16)
@@ -114,7 +111,6 @@ class EphemerisData:
         self.ecc = e * pow(2, -33)
         self.M0 = m_0 * pow(2, -31) * gpsPi
         self.toe = t_oe * pow(2, 4)
-        self.subframe2_valid = True
 
     def subframe3(self, dwrds):
         new_iode2 = self.GET_FIELD_U(dwrds[7], 8, 16)
@@ -140,13 +136,9 @@ class EphemerisData:
         self.omega = w * pow(2, -31) * gpsPi
         self.omega_dot = omega_dot * pow(2, -43) * gpsPi
         self.omega0 = omega_0 * pow(2, -31) * gpsPi
-        self.subframe3_valid = True
 
     def __init__(self):
         #Check if ephemeris is filled
-        self.subframe1_valid = False
-        self.subframe2_valid = False
-        self.subframe3_valid = False
         self.iodc = None
         self.iode1 = None
         self.iode2 = None

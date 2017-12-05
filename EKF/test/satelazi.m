@@ -1,4 +1,11 @@
-function [ el, azi ] = satelazi( pos, sat_pos )
+function [ el, azi ] = satelazi(lat, lon, h, sat_pos)
+    
+    wgs84 = wgs84Ellipsoid('meters');
+    [azi, el, ~] = ecef2aer(sat_pos(1,:), sat_pos(2,:), sat_pos(3,:), ...
+                            lat, lon, h, wgs84);
+
+end
+%{
     %http://www.naic.edu/aisr/GPSTEC/drewstuff/MATLAB/elavazim.m
     %https://gis.stackexchange.com/questions/58923/calculate-view-angle
     n = size(sat_pos, 2);
@@ -22,7 +29,7 @@ function [ el, azi ] = satelazi( pos, sat_pos )
     ind = el > 90;
     el(ind) = 180 - el(ind);
 end
-
+%}
 %{ 
     Old useless code
     los_vec = diff_pos / norm(diff_pos);
