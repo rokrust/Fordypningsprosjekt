@@ -82,7 +82,7 @@ while True:
             sys.stdout.write('R')
             continue
 
-        scipy.io.savemat('Satellite_data_x8', data, )
+        scipy.io.savemat('Satellite_data_base', data, )
         print "Parsing done.. saved data in Sattelite_data.mat"
         break
 

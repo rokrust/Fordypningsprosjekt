@@ -17,7 +17,7 @@ function [ekf] = EKF_step_no_imu(sat_poss, y, u, ekf)
     
     %% Initial variables
     n_sat = size(y, 1);
-    ekf.R = 10*eye(n_sat);
+    ekf.R = eye(n_sat);
      
     %Estimated range
     ekf.H = ekf.h(ekf.x_hat_, sat_poss, y);
