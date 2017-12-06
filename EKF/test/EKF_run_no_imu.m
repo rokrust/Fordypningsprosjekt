@@ -47,14 +47,14 @@ for i = t
     %Remove all satellites with elevation less than 10 deg,
     %unless all are have 0 deg elevation
     if any(el)
-        ind = el < 0;
+        ind = el < 15;
         el(ind) = [];
         azi(ind) = [];
         pr(ind) = [];
         sat_poss(:, ind) = [];
     
-        %di = ionospheric_correction(data.ionospheric, el, azi, lat, lon, data.t(i));
-        %pr = pr - di'*c;
+        di = ionospheric_correction(data.ionospheric, el, azi, lat, lon, data.t(i));
+        pr = pr - di'*c;
     end
     
     % EKF algorithm
