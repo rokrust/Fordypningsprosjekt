@@ -69,10 +69,9 @@ data = {    'pseudorange'   : [],
         }
 zeroRow = [0 for x in range(32)]
 zeroPos = [[0, 0, 0] for x in range(32)]
-
+i = 0
 while True:
     msg = dev.receive_message()
-
     # end of file
     if msg is None:
         if opts.reopen:
@@ -91,6 +90,7 @@ while True:
 
     if msg.name() == 'RXM_RAWX':                                #New pseudorange measurement
             if len(satData.locked_satellites) >= 4:             #At least four satellites locked
+
                 data['pseudorange'].append(list(zeroRow))
                 data['satPos'].append(list(zeroPos))
                 data['t'].append(list(zeroRow))
@@ -103,21 +103,19 @@ while True:
 
                     #Satellite position estimate
                     satPosition(satData, svid, t_sv)
-                    pos = satData.satpos[svid]
-                    t_flight = pos.extra
                     correctPosition(satData, svid, t_flight)
-
-
+                    pos = satData.satpos[svid]
 
                     #Add to mat-file
                     data['satPos'][-1][svid-1] = list([pos.X, pos.Y, pos.Z])
-                    data['pseudorange'][-1][svid - 1] = satData.raw.prMeasured[svid] - pos.extra*speedOfLight#t_flight*speedOfLight
+                    data['pseudorange'][-1][svid - 1] = satData.raw.prMeasured[svid] + pos.extra*speedOfLight
                     data['t'][-1][svid - 1] = t_sv
 
                     ion = satData.ephemeris[svid].ionospheric
                     if ion != None and ion.valid:
                         ionospheric = [ion.a0, ion.a1, ion.a2, ion.a3, ion.b0, ion.b1, ion.b2, ion.b3]
                         data['ionospheric'] = ionospheric
+                pass
 
     if opts.show:
         print(str(msg))

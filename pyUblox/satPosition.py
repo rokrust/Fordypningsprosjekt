@@ -34,6 +34,8 @@ def satPosition_raw(eph, svid, transmitTime):
 
     pi = util.gpsPi
 
+    c = 299792458;
+
     try:
         Crs = eph.crs
         dn  = eph.deltaN
@@ -66,19 +68,18 @@ def satPosition_raw(eph, svid, transmitTime):
     #Navstar:
     # Thus, the user who utilizes the L1 P(Y) signal only shall modify the code phase offset
     # in accordance with paragraph 20.3.3.3.3.1 with the equation
-    #dt_sv = af0 + af1 * t_k + af2 * t_k * t_k
+
+    for ii in range(3):
+        t_k -= af0 + af1 * t_k + af2 * t_k * t_k
 
     # Week crossover check
-    T = t_k# - dt_sv
+    #T = t_k - dt_sv
+    dt_sv = af0 + af1 * t_k + af2 * t_k * t_k
+    T = t_k - dt_sv
     if T > 302400:
         T = T - 604800
     if T < -302400:
         T = T + 604800
-
-    if T > 302400:
-        pass
-    elif T < -302400:
-        pass
 
     n0 = sqrt(mu / (A*A*A))
     n = n0 + dn
@@ -126,7 +127,7 @@ def satPosition_raw(eph, svid, transmitTime):
         Xdash*cos(Wc) - Ydash*cos(i)*sin(Wc),
         Xdash*sin(Wc) + Ydash*cos(i)*cos(Wc),
         Ydash*sin(i))
-    satpos.extra = af0 + af1 * T + af2 * T * T - F * ec * sqrt(A) * sin(E)
+    satpos.extra = dt_sv - 2*sqrt(mu*A) * ec * sin(E)/(c*c)
 
     return satpos
 
