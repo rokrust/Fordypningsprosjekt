@@ -1,19 +1,19 @@
-%data = load('../../pyUblox/Satellite_data_base.mat');
+data = load('../../pyUblox/Satellite_data_base.mat');
 
-data = load('Logs/Lab1-Data.mat');
+%data = load('Logs/Lab1-Data.mat');
 [~, ~, n_sat] = parse_data(data, 1);    %Find initial number of satellites
 ekf = EKF_init_no_imu(n_sat);
 %n = size(data.pseudorange, 1);
-n = size(data.PR, 2);
-t = 1:n;
-%{
+%n = size(data.PR, 2);
+%t = 1:n;
+
+
 %BASE JUMP
-base_end = 11240;
+base_end = 10000;
 base_start = 800;
 t = base_start:base_end;
 n = size(t, 2);
 %t = 1:n;
-%}
 
 %Memory allocation
 pos = zeros(3, n);
@@ -21,6 +21,7 @@ llh = zeros(3, n);
 vel = zeros(3, n);
 bias = zeros(1, n);
 bias_dot = zeros(1, n);
+res = zeros(1, n);
 
 wgs84 = wgs84Ellipsoid('meters');
 
@@ -29,18 +30,24 @@ P0 = [2.799832e+06; 4.79942e+05; 5.691477e+06];
 P0geo = [63.628611, 9.726939, 79];
 c = 299792458.0;
 for i = t
-    j = i;% - base_start + 1;
+    j = i - base_start + 1;
     [pr, sat_poss, ~] = parse_data(data, i);
+    %pr = data.pseudorange(i, [1, 8, 10, 11, 14, 32])';
+    %sat_poss = squeeze(data.satPos(i, [1, 8, 10, 11, 14, 32], :))';
+    
     
     % Corrections
     p = ekf.x_hat(1:3);     %Estimated position
     [lat, lon, h] = ecef2geodetic(wgs84, p(1), p(2), p(3));
-    [el, azi] = satelazi(lat, lon, h, sat_poss);
+    [el, azi] = satelazi(P0geo(1), P0geo(2), P0geo(3), sat_poss);
     
+    if i == 4900    
+    end
+        
     %Remove all satellites with elevation less than 10 deg,
     %unless all are have 0 deg elevation
     if any(el)
-        ind = el < 5;
+        ind = el < 0;
         el(ind) = [];
         azi(ind) = [];
         pr(ind) = [];
@@ -59,6 +66,7 @@ for i = t
     vel(:, j)  = ekf.x_hat(4:6);
     bias(:, j) = ekf.x_hat(7);
     bias_dot(:, j) = ekf.x_hat(8);
+    res(j) = ekf.res(end);
     
 end
 
@@ -80,13 +88,16 @@ for i = t
 end
 %}
 
-figure; plot(t, pos); title('pos ecef'); xlabel('samples'), ylabel('position {m}')
-figure; plot(t, llh(1:2, :)); title('lat,lon');
-figure; plot(t, vel); title('velocity'); xlabel('samples'), ylabel('velocity {m/s}')
+figure(1); plot(t, pos); title('pos ecef'); xlabel('samples'), ylabel('position {m}')
+figure(2); subplot(211); plot(t, llh(1, :));subplot(212); plot(t, llh(2, :)); % title('lat,lon');%plot(t, llh(1:2, :)); title('lat,lon');
+figure(3); plot(t, vel); title('velocity'); xlabel('samples'), ylabel('velocity {m/s}')
 
 %Biases
-figure;
+figure(4);
 plot(t, bias); title('bias');
+figure(5); plot(t, res);
 %subplot(2, 1, 2); plot(t, bias_dot); title('bias_{dot}');
 
-ekf.x_hat(1:3) - data.P0
+ekf.x_hat(1:3) - P0
+
+figure(6), histogram(res);

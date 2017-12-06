@@ -174,7 +174,7 @@ class SatelliteData:
             self.raw.add(svid, prMes, cpMes, 0, trkStat, cno)
 
             # step the smoothed pseudo-ranges
-            self.smooth.step(self.raw)
+            #self.smooth.step(self.raw)
 
         self.determine_locked_satellites()
 

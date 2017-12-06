@@ -103,13 +103,15 @@ while True:
 
                     #Satellite position estimate
                     satPosition(satData, svid, t_sv)
+                    pos = satData.satpos[svid]
+                    t_flight = pos.extra
                     correctPosition(satData, svid, t_flight)
 
-                    pos = satData.satpos[svid]
+
 
                     #Add to mat-file
                     data['satPos'][-1][svid-1] = list([pos.X, pos.Y, pos.Z])
-                    data['pseudorange'][-1][svid - 1] = satData.raw.prMeasured[svid]
+                    data['pseudorange'][-1][svid - 1] = satData.raw.prMeasured[svid] - pos.extra*speedOfLight#t_flight*speedOfLight
                     data['t'][-1][svid - 1] = t_sv
 
                     ion = satData.ephemeris[svid].ionospheric

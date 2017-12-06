@@ -21,7 +21,7 @@ def satPosition_raw(eph, svid, transmitTime):
 
     This fills in the satpos element of the satinfo object
     '''
-    from math import sqrt, atan, sin, cos
+    from math import sqrt, atan, sin, cos, atan2
 
     # WGS 84 value of earth's univ. grav. par.
     mu = 3.986005E+14
@@ -52,6 +52,7 @@ def satPosition_raw(eph, svid, transmitTime):
         Wdot = eph.omega_dot
         idot = eph.idot
         Tgd = eph.Tgd
+        Toc = eph.toc
         af0 = eph.af0
         af1 = eph.af1
         af2 = eph.af2
@@ -61,17 +62,23 @@ def satPosition_raw(eph, svid, transmitTime):
         return None
     # Clock correction (without relativity)
     t_k = (transmitTime - Toe)
+
     #Navstar:
     # Thus, the user who utilizes the L1 P(Y) signal only shall modify the code phase offset
     # in accordance with paragraph 20.3.3.3.3.1 with the equation
-    dt_sv = af0 + af1 * t_k + af2 * t_k * t_k - Tgd
+    #dt_sv = af0 + af1 * t_k + af2 * t_k * t_k
 
     # Week crossover check
-    T = t_k - dt_sv
+    T = t_k# - dt_sv
     if T > 302400:
         T = T - 604800
     if T < -302400:
         T = T + 604800
+
+    if T > 302400:
+        pass
+    elif T < -302400:
+        pass
 
     n0 = sqrt(mu / (A*A*A))
     n = n0 + dn
@@ -79,29 +86,26 @@ def satPosition_raw(eph, svid, transmitTime):
     M = M0 + n*T
     E = M
     for ii in range(22):
-        Eold = E
-        E = M + ec * sin(E)
-        if abs(E - Eold) < 1.0e-12:
-            break
-    else:
-        print("WARNING: Kepler Eqn didn't converge for sat {} (last step {})".format(svid, E - Eold))
+        E = E - (E - ec * sin(E) - M)/(1 - ec*cos(E))
 
     # relativistic correction term
-    t_r = F * ec * sqrt(A) * sin(E)
-    T = T - t_r
 
-    snu = sqrt(1 - ec*ec) * sin(E) / (1 - ec*cos(E))
-    cnu = (cos(E) - ec) / (1 - ec*cos(E))
-    if cnu == 0:
-        nu = pi/2 * snu / abs(snu)
-    elif (snu == 0) and (cnu > 0):
-        nu = 0
-    elif (snu == 0) and (cnu < 0):
-        nu = pi
-    else:
-        nu = atan(snu/cnu)
-        if cnu < 0:
-            nu += pi * snu / abs(snu)
+    #T = T - t_r
+
+    nu = atan2(sqrt(1-ec*ec)*sin(E), cos(E)-ec)
+
+    #snu = sqrt(1 - ec*ec) * sin(E) / (1 - ec*cos(E))
+    #cnu = (cos(E) - ec) / (1 - ec*cos(E))
+    #if cnu == 0:
+    #    nu = pi/2 * snu / abs(snu)
+    #elif (snu == 0) and (cnu > 0):
+    #    nu = 0
+    #elif (snu == 0) and (cnu < 0):
+    #    nu = pi
+    #else:
+    #    nu = atan(snu/cnu)
+    #    if cnu < 0:
+    #        nu += pi * snu / abs(snu)
 
     phi = nu + w
 
@@ -122,6 +126,7 @@ def satPosition_raw(eph, svid, transmitTime):
         Xdash*cos(Wc) - Ydash*cos(i)*sin(Wc),
         Xdash*sin(Wc) + Ydash*cos(i)*cos(Wc),
         Ydash*sin(i))
+    satpos.extra = af0 + af1 * T + af2 * T * T - F * ec * sqrt(A) * sin(E)
 
     return satpos
 
