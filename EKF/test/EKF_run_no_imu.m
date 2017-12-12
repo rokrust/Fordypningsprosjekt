@@ -1,4 +1,5 @@
 data = load('../../pyUblox/Satellite_data_base.mat');
+%13 grader under loggtid
 
 %data = load('Logs/Lab1-Data.mat');
 [~, ~, n_sat] = parse_data(data, 1);    %Find initial number of satellites
@@ -27,37 +28,31 @@ n_sats = zeros(1, n);
 wgs84 = wgs84Ellipsoid('meters');
 
 %Ekf step loop
-P0 = [2.799832e+06; 4.79942e+05; 5.691477e+06];
+P0 = [2799897.28828497;479945.270743682;5691587.69210791];
 P0geo = [63.628611, 9.726939, 79];
 c = 299792458.0;
 
 for i = t
     j = i - base_start + 1;
     [pr, sat_poss, ~] = parse_data(data, i);
-    %pr = data.pseudorange(i, [1, 8, 10, 11, 14, 32])';
-    %sat_poss = squeeze(data.satPos(i, [1, 8, 10, 11, 14, 32], :))';
-    
-    
-    % Corrections
+
     p = ekf.x_hat(1:3);     %Estimated position
     [lat, lon, h] = ecef2geodetic(wgs84, p(1), p(2), p(3));
-    [el, azi] = satelazi(P0geo(1), P0geo(2), P0geo(3), sat_poss);
-    
-    if i == 4900    
-    end
+    [el, azi] = satelazi(lat, lon, h, sat_poss);
         
     %Remove all satellites with elevation less than 10 deg,
-    %unless all are have 0 deg elevation
-    
-    if any(el)
+    %unless all are have 0 deg elevation    
+    if sum(el > 15) >= 4
         ind = el < 15;
         el(ind) = [];
         azi(ind) = [];
         pr(ind) = [];
         sat_poss(:, ind) = [];
-    
+        
+        % Corrections
         di = ionospheric_correction(data.ionospheric, el, azi, lat, lon, data.t(i));
-        pr = pr - di'*c;
+        ds = sagnac_correction(p, sat_poss);
+        pr = pr - di'*c - ds'*c;
     end
     n_sats(i) = size(el, 2);
     %ekf.R = EKF_calculate_R(el)/8;
