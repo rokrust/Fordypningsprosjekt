@@ -42,6 +42,10 @@ for i = t
         
     %Remove all satellites with elevation less than 10 deg,
     %unless all are have 0 deg elevation    
+    
+    if j == 648
+    end
+    
     if sum(el > 15) >= 4
         ind = el < 15;
         el(ind) = [];
@@ -52,7 +56,7 @@ for i = t
         % Corrections
         di = ionospheric_correction(data.ionospheric, el, azi, lat, lon, data.t(i));
         ds = sagnac_correction(p, sat_poss);
-        pr = pr - di'*c - ds'*c;
+        pr = pr - di'*c + ds'*c;
     end
     n_sats(i) = size(el, 2);
     %ekf.R = EKF_calculate_R(el)/8;
@@ -76,7 +80,7 @@ end
 %figure(3); plot(t, vel(100:end)); title('velocity'); xlabel('samples'), ylabel('velocity {m/s}')
 hold on;
 P1 = mean(pos(:, 800:10000)');
-figure(1); plot(pos(1, 800:10000)-P1(1), pos(2, 800:10000)-P1(2), '*');
+figure(1); plot(pos(1, 100:10000)-P1(1), pos(2, 100:10000)-P1(2), '*');
 
 %Biases
 figure(4);
