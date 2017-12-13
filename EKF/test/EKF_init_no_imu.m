@@ -1,4 +1,4 @@
-function ekf = EKF_init_no_imu(n_sat)
+function ekf = EKF_init_no_imu()
     n = 8;
     dim = 3;
     c = 299792458;
@@ -20,16 +20,14 @@ function ekf = EKF_init_no_imu(n_sat)
              zeros(1, dim)  c               0;
              zeros(1, dim)  0               c];
     
-    sys = ss(ekf.A, ekf.B, zeros(n_sat, n), zeros(n_sat, size(ekf.B, 2)));
+    sys = ss(ekf.A, ekf.B, zeros(1, n), zeros(1, size(ekf.B, 2)));
     sys = c2d(sys, h);     
     ekf.A = sys.A;
     ekf.B = sys.B;
     
     ekf.Q = diag([zeros(1, 3) 0.1*ones(1, 3) 10 10]);
-    %ekf.Q(1:3, 1:3) = zeros(3);
-    ekf.Q = ekf.Q;
     
-    ekf.R  = eye(n_sat);
+    ekf.R  = eye(1);
     ekf.P  = eye(8);
     ekf.P_ = eye(8);
     
