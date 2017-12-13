@@ -127,7 +127,7 @@ def satPosition_raw(eph, svid, transmitTime):
         Xdash*cos(Wc) - Ydash*cos(i)*sin(Wc),
         Xdash*sin(Wc) + Ydash*cos(i)*cos(Wc),
         Ydash*sin(i))
-    satpos.extra = dt_sv - 2*sqrt(mu*A) * ec * sin(E)/(c*c)
+    satpos.extra = [dt_sv, - 2*sqrt(mu*A) * ec * sin(E)/(c*c)]
 
     return satpos
 

@@ -65,7 +65,9 @@ satData = SatelliteData()
 data = {    'pseudorange'   : [],
             'satPos'        : [],
             't'             : [],
-            'ionospheric'   : []
+            'ionospheric'   : [],
+            'relativistic'  : [],
+            'sv_clock'      : []
         }
 zeroRow = [0 for x in range(32)]
 zeroPos = [[0, 0, 0] for x in range(32)]
@@ -94,6 +96,8 @@ while True:
                 data['pseudorange'].append(list(zeroRow))
                 data['satPos'].append(list(zeroPos))
                 data['t'].append(list(zeroRow))
+                data['relativistic'].append(list(zeroRow))
+                data['sv_clock'].append(list(zeroRow))
 
                 for svid in satData.locked_satellites:
                     pr = satData.raw.prMeasured[svid]
@@ -108,8 +112,10 @@ while True:
 
                     #Add to mat-file
                     data['satPos'][-1][svid-1] = list([pos.X, pos.Y, pos.Z])
-                    data['pseudorange'][-1][svid - 1] = satData.raw.prMeasured[svid] + pos.extra*speedOfLight
+                    data['pseudorange'][-1][svid - 1] = satData.raw.prMeasured[svid] + sum(pos.extra)*speedOfLight
                     data['t'][-1][svid - 1] = t_sv
+                    data['sv_clock'][-1][svid - 1] = pos.extra[0]
+                    data['relativistic'][-1][svid - 1] = pos.extra[1]
 
                     ion = satData.ephemeris[svid].ionospheric
                     if ion != None and ion.valid:

@@ -18,9 +18,6 @@ end
 
 
 function [pr, sat_pos] = parse_data(data, i, dr)
-    if i == 200
-    end
-
     vis_sat = data.pseudorange(i, :) ~= 0;           %visible satellites index (EL not 0)
     sat_pos = squeeze(data.satPos(i, vis_sat, :))';   %Satellite positions
     pr = data.pseudorange(i, :) + dr.dr(:, i)';
