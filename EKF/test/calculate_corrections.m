@@ -19,7 +19,6 @@ function [ dr_tot ] = calculate_corrections( base_pos, data)
         dr_tot(:, i-30) = dr';
     end
     dr = dr_tot;
-    %dr(:, 1:30) = [];
     save('pr_corr.mat', 'dr')
 end
 

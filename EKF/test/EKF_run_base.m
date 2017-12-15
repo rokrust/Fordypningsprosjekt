@@ -24,7 +24,7 @@ c = 299792458.0;
 % True position in ECEF, NED and GEODETIC
 P0 = [2799898.70162591;479945.262043493;5691591.39815204];
 [lat_o, lon_o, h_o] = ecef2geodetic(wgs84, P0(1), P0(2), P0(3));
-lat_o = 63.629156445; lon_o = 9.72687400; h_o = 1.2799810e+02;
+%lat_o = 63.629156445; lon_o = 9.72687400; h_o = 1.2799810e+02;
 bias = zeros(1, 11969);
 
 % DGPS corrections
@@ -43,11 +43,13 @@ for i = t
     
     di = ionospheric_correction(data.ionospheric, el, azi, lat_o, lon_o, data.t(i));
     ds = sagnac_correction(p, sat_poss);
-    pr = pr - di'*c;
+    pr = pr + di'*c;
+    if i == 5000
+    end
     
     % EKF algorithm
     ekf.R = EKF_calculate_R(el)/8;
-    ekf = EKF_step_no_imu(sat_poss, pr, zeros(5, 1), ekf);    
+    ekf = EKF_step_no_imu(sat_poss, pr, 0, ekf);    
     
     % For plotting
     [N, E, D] = ecef2ned(p(1), p(2), p(3), lat_o, lon_o, h_o, wgs84);
@@ -66,5 +68,5 @@ figure(1); plot(pos(1, 800:10000), pos(2, 800:10000), '*'); title('Base position
 %figure(5); plot(t, res);
 %subplot(2, 1, 2); plot(t, bias_dot); title('bias_{dot}');
 
-P0 = mean(pos_ecef(:, 4590:4590+716)')'
+P0 = mean(pos_ecef(:, 800:10000)')'
 save('P0.mat', 'P0');

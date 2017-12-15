@@ -46,7 +46,7 @@ for i = t
 
     % EKF algorithm step
     ekf.R = EKF_calculate_R(el)/24;
-    ekf = EKF_step_no_imu(sat_poss, pr, zeros(5, 1), ekf);
+    ekf = EKF_step_no_imu(sat_poss, pr, 0, ekf);
     
     % For plotting
     pos(:, j)  = [N; E; D];
