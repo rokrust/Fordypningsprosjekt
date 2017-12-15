@@ -13,9 +13,9 @@ function [ dr_tot ] = calculate_corrections( base_pos, data)
         r = sqrt(sum((sat_poss - base_pos) .^ 2)); %Calculate true range
         dr = r - pr;
     
-        %trans = abs(dr-m) > 10;
+        trans = abs(dr-m) > 10;
         %dr(trans) = m(trans);
-        dr(~ind) = deal(0);      %Set non-visible satellite correction to zero
+        %dr(~ind) = deal(0);      %Set non-visible satellite correction to zero
         dr_tot(:, i-30) = dr';
     end
     dr = dr_tot;

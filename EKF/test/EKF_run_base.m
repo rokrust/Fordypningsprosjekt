@@ -8,7 +8,7 @@ ekf = EKF_init_no_imu();
 n = size(data.pseudorange, 1);
 
 %BASE JUMP
-base_end = n; %n
+base_end = n;%13000; %n
 base_start = 31;%800; x8 begynner på iterasjon 32
 t = base_start:base_end;
 n = size(t, 2);
@@ -18,6 +18,7 @@ pos = zeros(3, n);
 pos_ecef = zeros(3, n);
 ion = zeros(1, n);
 sagnac = zeros(1, n);
+elev = zeros(1, n);
 wgs84 = wgs84Ellipsoid('meters');
 c = 299792458.0;
 
@@ -39,16 +40,17 @@ for i = t
     % Mask out low elevation satellites
     p = ekf.x_hat(1:3);
     [el, azi] = satelazi(lat_o, lon_o, h_o, sat_poss);
+    elev(j) = el(8);
+    if sum(el < 10) > 0
+    end
     [pr, sat_poss, el, azi] = elev_mask(pr, sat_poss, el, azi, 15);
     
     di = ionospheric_correction(data.ionospheric, el, azi, lat_o, lon_o, data.t(i));
     ds = sagnac_correction(p, sat_poss);
-    pr = pr + di'*c;
-    if i == 5000
-    end
+    pr = pr - di'*c;% - ds';
     
     % EKF algorithm
-    ekf.R = EKF_calculate_R(el)/8;
+    ekf.R = EKF_calculate_R(el)/16;
     ekf = EKF_step_no_imu(sat_poss, pr, 0, ekf);    
     
     % For plotting
@@ -59,9 +61,8 @@ for i = t
     ion(j) = di(1);
     sagnac(j) = ds(1);
 end
-
-hold on;
-figure(1); plot(pos(1, 800:10000), pos(2, 800:10000), '*'); title('Base position');
+%hold on;
+%figure(1); plot(pos(1, 800:10000), pos(2, 800:10000), '*'); title('Base position');
 
 %Biases
 %figure(4); subplot(3, 1, 1); hold off; plot(t(1:11969), bias(31:11969+30)); title('Base station bias'); xlabel('Samples'); ylabel('Bias [m]');axis([0 12000 -3.5*10^5 0.5*10^5]);

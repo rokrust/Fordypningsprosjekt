@@ -84,7 +84,7 @@ while True:
             continue
 
         scipy.io.savemat('Satellite_data_base', data, )
-        print "Parsing done.. saved data in Sattelite_data.mat"
+        print "Parsing done.. saved data in Satellite_data_xxxx.mat"
         break
 
     msg.unpack()
@@ -110,12 +110,12 @@ while True:
 
                     #Satellite position estimate
                     satPosition(satData, svid, t_sv)
-                    correctPosition(satData, svid, t_flight)
+                    #correctPosition(satData, svid, t_flight)
                     pos = satData.satpos[svid]
 
                     #Add to mat-file
                     data['satPos'][-1][svid-1] = list([pos.X, pos.Y, pos.Z])
-                    data['pseudorange'][-1][svid - 1] = satData.raw.prMeasured[svid] + sum(pos.extra)*speedOfLight
+                    data['pseudorange'][-1][svid - 1] = satData.raw.prMeasured[svid]# + sum(pos.extra)*speedOfLight
                     data['sv_clock'][-1][svid - 1] = pos.extra[0]
                     data['relativistic'][-1][svid - 1] = pos.extra[1]
 
