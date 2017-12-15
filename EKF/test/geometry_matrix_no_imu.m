@@ -4,4 +4,6 @@ function G = geometry_matrix_no_imu(x_hat, sat_poss, pseu)
     
     G = [(x_hat(1:3) - sat_poss)' ./ pseu, zeros(n_sat, dim)];
     G = [G ones(n_sat, 1), zeros(n_sat, 1)];
+    
+    %rangerate = -doppler*c/frekvens
 end

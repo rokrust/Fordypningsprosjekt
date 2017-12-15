@@ -69,8 +69,7 @@ def satPosition_raw(eph, svid, transmitTime):
     # Thus, the user who utilizes the L1 P(Y) signal only shall modify the code phase offset
     # in accordance with paragraph 20.3.3.3.3.1 with the equation
 
-    for ii in range(3):
-        t_k -= af0 + af1 * t_k + af2 * t_k * t_k
+    t_k -= af0 + af1 * t_k + af2 * t_k * t_k
 
     # Week crossover check
     #T = t_k - dt_sv
@@ -94,19 +93,6 @@ def satPosition_raw(eph, svid, transmitTime):
     #T = T - t_r
 
     nu = atan2(sqrt(1-ec*ec)*sin(E), cos(E)-ec)
-
-    #snu = sqrt(1 - ec*ec) * sin(E) / (1 - ec*cos(E))
-    #cnu = (cos(E) - ec) / (1 - ec*cos(E))
-    #if cnu == 0:
-    #    nu = pi/2 * snu / abs(snu)
-    #elif (snu == 0) and (cnu > 0):
-    #    nu = 0
-    #elif (snu == 0) and (cnu < 0):
-    #    nu = pi
-    #else:
-    #    nu = atan(snu/cnu)
-    #    if cnu < 0:
-    #        nu += pi * snu / abs(snu)
 
     phi = nu + w
 
