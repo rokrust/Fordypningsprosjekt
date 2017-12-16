@@ -42,8 +42,17 @@ for i = t
 
     % Mask out low elevation satellites
     [el, azi] = satelazi(lat_o, lon_o, h_o, sat_poss);
+    
+    % Ensures that the base station position aligns with the RTKlib solution
+    if i >= 4590 && i <= 4590+716
+        lat_o = rad2deg(GpsFixRtk.base_lat(j-4590+1));
+        lon_o = rad2deg(GpsFixRtk.base_lon(j-4590+1));
+        h_o = GpsFixRtk.base_height(j-4590+1);
+    end
+    
     [pr, sat_poss, el, azi] = elev_mask(pr, sat_poss, el, azi, 5); 
     [N, E, D] = ecef2ned(p(1), p(2), p(3), lat_o, lon_o, h_o, wgs84);
+    
     if use_DGPS == false
         di = ionospheric_correction(data.ionospheric, el, azi, lat_o, lon_o, data.t(i));
         ds = sagnac_correction(p, sat_poss);
@@ -52,7 +61,7 @@ for i = t
     
     % EKF algorithm step
     ekf.R = EKF_calculate_R(el)/16;
-    ekf = EKF_step_no_imu(sat_poss, pr, 0, ekf);
+    ekf = EKF_step_no_imu(sat_poss, pr, zeros(3, 1), ekf);
     
     % For plotting
     pos(:, j)  = [N; E; D];
@@ -63,11 +72,11 @@ for i = t
     
 end
 %% Plot data
-hold on;
+%hold on;
 %figure(1); plot(GpsFixRtk.n, GpsFixRtk.e, '*'); 
 %figure(1); plot(pos(1, 4590:4590+716), pos(2, 4590:4590+716), '*'); title('X8 position');
 %hold on; figure(1); plot(pos(1, 100:1000), pos(2, 100:1000), '*'); title('X8 position');
-
+%figure(1); subplot(3, 1, 1); plot(data.t(4590:4590+716)-data.t(4590), GpsFixRtk.n); hold on; plot(data.t(4590:4590+716)-data.t(4590), pos(1, 4590:4590+716))
 %Biases
 %figure(4); hold off; subplot(3, 1, 2); plot(t, bias); title('Standard GPS X8 bias'); xlabel('Samples'); ylabel('Bias [m]');
 %figure(5); plot(t, res);

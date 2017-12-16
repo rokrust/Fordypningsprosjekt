@@ -20,10 +20,10 @@ function ekf = EKF_init_no_imu()
              zeros(1, dim)  c               0;
              zeros(1, dim)  0               c];
     
-    ekf.B = [zeros(dim, 1);
-             ones(dim, 1);
-             zeros(1, 1);
-             zeros(1, 1)];
+    ekf.B = [zeros(dim, dim);
+             ones(dim, dim);
+             zeros(1, dim);
+             zeros(1, dim)];
     
     sys = ss(ekf.A, ekf.B, zeros(1, n), zeros(1, size(ekf.B, 2)));
     sys = c2d(sys, h);     

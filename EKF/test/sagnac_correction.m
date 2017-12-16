@@ -1,6 +1,7 @@
 function [ d_pr ] = sagnac_correction( pos, sat_pos )
     if pos(1) == 0 || pos(2) == 0
-        d_pr = 0;
+        n = size(sat_pos, 2)
+        d_pr = zeros(1, n);
         return
     end
 
