@@ -30,8 +30,7 @@ bias = zeros(1, 11969);
 
 % DGPS corrections
 calculate_corrections(P0, data);
-
-
+%{
 %Ekf step loop
 for i = t
     j = i - base_start + 1;
@@ -47,7 +46,7 @@ for i = t
     
     di = ionospheric_correction(data.ionospheric, el, azi, lat_o, lon_o, data.t(i));
     ds = sagnac_correction(p, sat_poss);
-    pr = pr - di'*c;% - ds';
+    pr = pr - di'*c - ds';
     
     % EKF algorithm
     ekf.R = EKF_calculate_R(el)/16;
@@ -61,6 +60,7 @@ for i = t
     ion(j) = di(1);
     sagnac(j) = ds(1);
 end
+%}
 %hold on;
 %figure(1); plot(pos(1, 800:10000), pos(2, 800:10000), '*'); title('Base position');
 

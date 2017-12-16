@@ -1,6 +1,6 @@
 %% Load mat files
 data = load('../../pyUblox/Satellite_data_x8.mat');
-%dr = load('pr_corr.mat');
+dr = load('pr_corr.mat');
 %dr = dr.dr;
 P0 = load('P0.mat');
 P0 = P0.P0;
@@ -10,7 +10,7 @@ use_DGPS = true;
 ekf = EKF_init_no_imu();
 n = size(data.pseudorange, 1);
 
-base_end = 13000-31%4590+716;%11969;
+base_end = 11969;
 base_start = 1;%800; x8 begynner på iterasjon 32
 t = base_start:base_end;
 n = size(t, 2);
@@ -32,7 +32,7 @@ c = 299792458.0;
 %% Ekf step loop
 %P0 = [2799898.70162591;479945.262043493;5691591.39815204];
 [lat_o, lon_o, h_o] = ecef2geodetic(wgs84, P0(1), P0(2), P0(3));
-lat_o = 63.629156445; lon_o = 9.72687400; h_o = 1.2799810e+02;
+%lat_o = 63.629156445; lon_o = 9.72687400; h_o = 1.2799810e+02;
 
 for i = t
     j = i - base_start + 1;
@@ -66,7 +66,7 @@ end
 hold on;
 %figure(1); plot(GpsFixRtk.n, GpsFixRtk.e, '*'); 
 %figure(1); plot(pos(1, 4590:4590+716), pos(2, 4590:4590+716), '*'); title('X8 position');
-hold on; figure(1); plot(pos(1, 100:1000), pos(2, 100:1000), '*'); title('X8 position');
+%hold on; figure(1); plot(pos(1, 100:1000), pos(2, 100:1000), '*'); title('X8 position');
 
 %Biases
 %figure(4); hold off; subplot(3, 1, 2); plot(t, bias); title('Standard GPS X8 bias'); xlabel('Samples'); ylabel('Bias [m]');

@@ -4,7 +4,7 @@ function [ dr_tot ] = calculate_corrections( base_pos, data)
     
     dr_tot = zeros(32, n-30);
     
-    for i = 31:n
+    for i = 1:n
     
         ind = data.pseudorange(i, :) ~= 0;    
         sat_poss = squeeze(data.satPos(i, :, :))';
@@ -13,12 +13,13 @@ function [ dr_tot ] = calculate_corrections( base_pos, data)
         r = sqrt(sum((sat_poss - base_pos) .^ 2)); %Calculate true range
         dr = r - pr;
     
-        trans = abs(dr-m) > 10;
+        %trans = abs(dr-m) > 10;
         %dr(trans) = m(trans);
-        %dr(~ind) = deal(0);      %Set non-visible satellite correction to zero
-        dr_tot(:, i-30) = dr';
+        dr(~ind) = deal(0);      %Set non-visible satellite correction to zero
+        dr_tot(:, i) = dr';
     end
     dr = dr_tot;
-    save('pr_corr.mat', 'dr')
+    t_b = data.t;
+    save('pr_corr.mat', 'dr', 't_b')
 end
 

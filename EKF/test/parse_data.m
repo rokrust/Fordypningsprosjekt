@@ -7,14 +7,30 @@ function [pr, sat_pos, n_sat] = parse_data(data, i)
 end
 %}
 
-function [pr, sat_pos] = parse_data(data, i, dr, dgps)
+function [pr, sat_pos] = parse_data(data, i, corr_data, dgps)
     vis_sat = data.pseudorange(i, :) ~= 0;           %visible satellites index (EL not 0)
     vis_sat(4) = 0;
     sat_pos = squeeze(data.satPos(i, vis_sat, :))';   %Satellite positions
     
     if dgps
+        t_r = data.t(i);
+        time_diff_prev = Inf;
         
-        pr = data.pseudorange(i, :) + dr(:, i)';
+        %Match rover and base time
+        j = 1;
+        for j = 30:size(corr_data.t_b,2)
+            time_diff_curr = abs(t_r - corr_data.t_b(j));
+            
+            % Best match found
+            if time_diff_curr > time_diff_prev
+                break
+            end
+            
+            time_diff_prev = time_diff_curr;
+        end
+        if j - 1 == 620
+        end
+        pr = data.pseudorange(i, :) + corr_data.dr(:, j-1)';
     else
         c = 299792458.0;
         d_sv = data.sv_clock(i, :) + data.relativistic(i, :);
