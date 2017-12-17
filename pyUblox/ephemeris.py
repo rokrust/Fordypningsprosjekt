@@ -185,6 +185,20 @@ class IonosphericData:
         if value > 127:
             value -= 256
         return value
+
+    def GET_FIELD_U(self, w, nb, pos):
+        return (((w) >> (pos)) & ((1 << (nb)) - 1))
+
+    def twos_complement(self, v, nb):
+        sign = v >> (nb - 1)
+        value = v
+        if sign != 0:
+            value = value - (1 << nb)
+        return value
+
+    def GET_FIELD_S(self, w, nb, pos):
+        v = self.GET_FIELD_U(w, nb, pos)
+        return self.twos_complement(v, nb)
         
     def __init__(self, msg):
         '''parse assuming a subframe 4 page 18 message containing ionospheric data'''
