@@ -2,7 +2,7 @@ function ekf = EKF_init_no_imu()
     n = 8;
     dim = 3;
     c = 299792458;
-    h = 2^-1;
+    h = 10^-1;
     
     ekf.cfg.dim = dim;
     ekf.cfg.n = n; %pos, vel, ang, bias
@@ -14,14 +14,9 @@ function ekf = EKF_init_no_imu()
              zeros(dim)     zeros(dim)      zeros(dim, 1)   zeros(dim, 1);
              zeros(1, dim)  zeros(1, dim)   0               1;
              zeros(1, dim)  zeros(1, dim)   0               0];
-
-    ekf.B = [zeros(dim)     zeros(dim, 1)   zeros(dim, 1);
-             eye(dim)       zeros(dim, 1)   zeros(dim, 1);
-             zeros(1, dim)  c               0;
-             zeros(1, dim)  0               c];
     
     ekf.B = [zeros(dim, dim);
-             ones(dim, dim);
+             eye(dim, dim);
              zeros(1, dim);
              zeros(1, dim)];
     

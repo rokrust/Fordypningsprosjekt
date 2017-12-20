@@ -203,12 +203,12 @@ class IonosphericData:
     def __init__(self, msg):
         '''parse assuming a subframe 4 page 18 message containing ionospheric data'''
         # drop parity bits and put data in handy list
-        words = []
-        for i in range(10):
-            words.append(msg._recs[i]['dwrd'] >> 6)
+        dwrds = []
+        for i in range(2, 10):
+            dwrds.append(msg._recs[i]['dwrd'] >> 6)
 
-        self.pageID = ((words[2] >> 16) & 0x3f)
-        self.id = (words[2] >> 22)+3
+        self.pageID = ((dwrds[0] >> 16) & 0x3f)
+        self.id = (dwrds[0] >> 22)
 
         #for i in range(10):
         #    words[i] = (words[i] & 0xffffff)
@@ -227,17 +227,19 @@ class IonosphericData:
         #self.pageID = (words[2] & 0x3f0000) >> 16           #wrong
 
         # this checks if we have the right subframe
-        self.valid = (self.pageID == 56 and self.id == 4)
+        if self.id != 1:
+            pass
+        self.valid = (self.pageID == 56 and self.id == 1)
         if self.valid:
-            self.a0     = self.extract_int8(words[2], 2) * pow(2, -30)
-            self.a1     = self.extract_int8(words[2], 3) * pow(2, -27)
-            self.a2     = self.extract_int8(words[3], 1) * pow(2, -24)
-            self.a3     = self.extract_int8(words[3], 2) * pow(2, -24)
-            self.b0     = self.extract_int8(words[3], 3) * pow(2, 11)
-            self.b1     = self.extract_int8(words[4], 1) * pow(2, 14)
-            self.b2     = self.extract_int8(words[4], 2) * pow(2, 16)
-            self.b3     = self.extract_int8(words[4], 3) * pow(2, 16)
-            self.leap   = self.extract_uint8(words[8], 1)
+            self.a0     = self.extract_int8(dwrds[0], 2) * pow(2, -30)
+            self.a1     = self.extract_int8(dwrds[0], 3) * pow(2, -27)
+            self.a2     = self.extract_int8(dwrds[1], 1) * pow(2, -24)
+            self.a3     = self.extract_int8(dwrds[1], 2) * pow(2, -24)
+            self.b0     = self.extract_int8(dwrds[1], 3) * pow(2, 11)
+            self.b1     = self.extract_int8(dwrds[2], 1) * pow(2, 14)
+            self.b2     = self.extract_int8(dwrds[2], 2) * pow(2, 16)
+            self.b3     = self.extract_int8(dwrds[2], 3) * pow(2, 16)
+            self.leap   = self.extract_uint8(dwrds[6], 1)
 
     def __eq__(self, other):
         '''allow for equality testing

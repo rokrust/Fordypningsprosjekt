@@ -14,7 +14,7 @@ function [ekf] = EKF_step_no_imu(sat_poss, y, u, ekf)
     
     % Clock jump correction
     if res > 10^5
-        ekf.x_hat_(end-1) = ekf.x_hat_(end-1) + 299792.458;
+        ekf.x_hat_(end-1) = ekf.x_hat_(end-1) - 299792.458;
         ekf.H = ekf.h(ekf.x_hat_, sat_poss, y);
         y_hat = range_estimate_no_imu(sat_poss, ekf.x_hat_);
         res = y - y_hat;
@@ -28,7 +28,7 @@ function [ekf] = EKF_step_no_imu(sat_poss, y, u, ekf)
     
     ekf.P = (eye(ekf.cfg.n) - K*ekf.H)*ekf.P_*(eye(ekf.cfg.n) - K*ekf.H)' + K*ekf.R*K';
     %Symmetrize
-    ekf.P = (ekf.P + ekf.P') ./ 2;
+    %ekf.P = (ekf.P + ekf.P') ./ 2;
     
     %% Prediction
     ekf.x_hat_ = ekf.A*ekf.x_hat + ekf.B*u;
