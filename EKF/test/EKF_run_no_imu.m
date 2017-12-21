@@ -8,7 +8,7 @@ p = genpath('.');
 addpath(p);
 %13 grader under loggtid
 
-use_DGPS = false;%true;
+use_DGPS = true;
 ekf = EKF_init_no_imu();
 n = size(data.pseudorange, 1);
 
@@ -34,9 +34,10 @@ c = 299792458.0;
 acc_tot = zeros(3, 717);
 
 %% Ekf step loop
+P0 = [2799898.70162591;479945.262043493;5691591.39815204];
 [lat_o, lon_o, h_o] = ecef2geodetic(wgs84, P0(1), P0(2), P0(3));
-lat_o = rad2deg(mean(GpsFixRtk.base_lat)); 
-lon_o = rad2deg(mean(GpsFixRtk.base_lon)); 
+%lat_o = rad2deg(mean(GpsFixRtk.base_lat)); 
+%lon_o = rad2deg(mean(GpsFixRtk.base_lon)); 
 h_o = mean(GpsFixRtk.base_height);
 
 l = 15;
@@ -49,7 +50,6 @@ Acceleration.timestamp(idy) = [];
 t_acc = Acceleration.timestamp;
 t_rtk = GpsFixRtk.timestamp;
 
-
 for i = t
     j = i - base_start + 1;
     [pr, sat_poss] = parse_data(data, i, dr, use_DGPS, ekf.x_hat(end-1));
@@ -58,14 +58,14 @@ for i = t
 
     % Mask out low elevation satellites
     [el, azi] = satelazi(lat_o, lon_o, h_o, sat_poss);
-    [pr, sat_poss, el, azi] = elev_mask(pr, sat_poss, el, azi, 10); 
+    [pr, sat_poss, el, azi] = elev_mask(pr, sat_poss, el, azi, 15); 
     [N, E, D] = ecef2ned(p(1), p(2), p(3), lat_o, lon_o, h_o, wgs84);
     
     if use_DGPS == false
         di = ionospheric_correction(data.ionospheric, el, azi, lat_o, lon_o, data.t(i));
         ds = sagnac_correction(p, sat_poss);
         dt = tropospheric_correction(el, lat_o, lon_o, h_o, 15);
-        dt = 0;
+        %dt = 0;
         %di = 0;
         pr = pr - ds' - di'*c - dt';
     end
@@ -97,7 +97,7 @@ for i = t
     % EKF algorithm step
     ekf.R = EKF_calculate_R(el)/16;
     ekf = EKF_step_no_imu(sat_poss, pr, acc, ekf);
-    
+    p = ekf.x_hat(1:3);     %Estimated position
     % For plotting
     pos(:, j)  = [N; E; D];
     vel(:, j)  = ekf.x_hat(4:6);
@@ -106,14 +106,16 @@ for i = t
     res(j) = ekf.res(end);
     
 end
+idx = GpsFixRtk.src == 11266;
 RTKlib_pos = [GpsFixRtk.n, GpsFixRtk.e, GpsFixRtk.d];
 my_pos2 = pos(:, 4590:4590+716)';
 rms_vec = rms(RTKlib_pos(idx, :)-my_pos2(idx, :))
+var(RTKlib_pos(idx, :)-my_pos2(idx, :))
 
 %% Plot data
 idx = GpsFixRtk.src == 11266;
 t_plot = data.t(4590:4590+716);
-idx(1:50) = 0;
+%idx(1:50) = 0;
 
 %figure(2); plot(GpsFixRtk.n, GpsFixRtk.e, '*'); 
 %idx = GpsFixRtk.src == 11266;
@@ -121,13 +123,13 @@ idx(1:50) = 0;
 %hold on; figure(2); plot(pos(1, 4590:4590+707), pos(2, 4590:4590+707), '*'); title('X8 position');
 %hold on; figure(1); plot(pos(1, 100:1000), pos(2, 100:1000), '*'); title('X8 position');
 
-%figure(1); subplot(3, 1, 1); plot(t_plot(idx)-t_plot(51), GpsFixRtk.n(idx)); hold on; plot(t_plot(idx)-t_plot(51), my_pos2(idx, 1))
-%figure(1); subplot(3, 1, 2); plot(t_plot(idx)-t_plot(51), GpsFixRtk.e(idx)); hold on; plot(t_plot(idx)-t_plot(51), my_pos2(idx, 2))
-%figure(1); subplot(3, 1, 3); plot(t_plot(idx)-t_plot(51), GpsFixRtk.d(idx)); hold on; plot(t_plot(idx)-t_plot(51), my_pos2(idx, 3))
+figure(1); subplot(3, 1, 1); plot(t_plot(idx)-t_plot(1), GpsFixRtk.n(idx)); hold on; plot(t_plot(idx)-t_plot(1), my_pos2(idx, 1))
+figure(1); subplot(3, 1, 2); plot(t_plot(idx)-t_plot(1), GpsFixRtk.e(idx)); hold on; plot(t_plot(idx)-t_plot(1), my_pos2(idx, 2))
+figure(1); subplot(3, 1, 3); plot(t_plot(idx)-t_plot(1), GpsFixRtk.d(idx)); hold on; plot(t_plot(idx)-t_plot(1), my_pos2(idx, 3))
 
-hold on; plot(t_plot(idx)-t_plot(51), my_pos2(idx, 1))
-hold on; plot(t_plot(idx)-t_plot(51), my_pos2(idx, 2))
-hold on; plot(t_plot(idx)-t_plot(51), my_pos2(idx, 3))
+%hold on; plot(t_plot(idx)-t_plot(51), my_pos2(idx, 1))
+%hold on; plot(t_plot(idx)-t_plot(51), my_pos2(idx, 2))
+%hold on; plot(t_plot(idx)-t_plot(51), my_pos2(idx, 3))
 
 %Biases
 %figure(4); hold off; subplot(3, 1, 2); plot(t, bias); title('Standard GPS X8 bias'); xlabel('Samples'); ylabel('Bias [m]');

@@ -3,7 +3,6 @@ function [ el, azi ] = satelazi(lat, lon, h, sat_pos)
     wgs84 = wgs84Ellipsoid('meters');
     [azi, el, ~] = ecef2aer(sat_pos(1,:), sat_pos(2,:), sat_pos(3,:), ...
                             lat, lon, h, wgs84);
-
 end
 %{
     %http://www.naic.edu/aisr/GPSTEC/drewstuff/MATLAB/elavazim.m

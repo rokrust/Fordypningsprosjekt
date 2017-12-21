@@ -1,7 +1,7 @@
 function d_t = tropospheric_correction(el, lat, lon, h, temp0)
     lat_r = deg2rad(lat); lon_r = deg2rad(lat);
     el_r = deg2rad(el);
-    humidity = 0.7;
+    humidity = 0.001;
     
     if h < -100.0 || 1e4 < h
         d_t = 0.0;
